@@ -1,0 +1,4555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Thicket — a gesture garden</title>
+  <link rel="icon"
+    href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="%23B23A2A"/></svg>'>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F3EDDF;
+      --panel: #EBE3D2;
+      --line: #D6CBB2;
+      --ink: #241E14;
+      --muted: #8B7E66;
+      --accent: #B23A2A;
+      --vig: rgba(74, 60, 34, .07);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    html,
+    body {
+      height: 100%;
+      overscroll-behavior: none
+    }
+
+    body {
+      display: flex;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      font-size: 12px;
+      transition: background .45s ease, color .45s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    #rail {
+      width: 276px;
+      flex: none;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      overflow: hidden;
+      position: relative;
+      z-index: 5;
+      transition: width .45s cubic-bezier(.75, 0, .25, 1), background .45s, border-color .45s
+    }
+
+    body.folded #rail {
+      width: 0;
+      border-right-width: 0
+    }
+
+    #railIn {
+      width: 276px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      scrollbar-width: none
+    }
+
+    #railIn::-webkit-scrollbar {
+      width: 0
+    }
+
+    header {
+      padding: 22px 22px 16px
+    }
+
+    .over {
+      font-size: 9px;
+      letter-spacing: .24em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase
+    }
+
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 36px;
+      line-height: 1;
+      letter-spacing: -.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    h1 svg {
+      color: var(--accent);
+      flex: none;
+      transform: translateY(2px)
+    }
+
+    .sub {
+      margin-top: 12px;
+      font-size: 10.5px;
+      line-height: 1.75;
+      color: var(--muted)
+    }
+
+    section {
+      padding: 14px 22px;
+      border-top: 1px solid var(--line)
+    }
+
+    h2 {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .22em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 11px
+    }
+
+    .seg {
+      display: flex;
+      border: 1px solid var(--ink)
+    }
+
+    .seg button {
+      flex: 1;
+      padding: 7px 0;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      border-right: 1px solid var(--ink);
+      cursor: pointer;
+      transition: background .15s, color .15s
+    }
+
+    .seg button:last-child {
+      border-right: 0
+    }
+
+    .seg button.on {
+      background: var(--ink);
+      color: var(--bg)
+    }
+
+    .seg button:not(.on):hover {
+      background: var(--line)
+    }
+
+    .seg.small button {
+      font-size: 9px;
+      padding: 6px 0
+    }
+
+    .grid4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    #modeDesc {
+      margin-top: 9px;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      min-height: 30px
+    }
+
+    .ctl {
+      display: block;
+      margin-bottom: 9px
+    }
+
+    .ctl:last-child {
+      margin-bottom: 2px
+    }
+
+    .ctl .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1px
+    }
+
+    .ctl em {
+      font-style: normal;
+      font-size: 10.5px;
+      color: var(--muted)
+    }
+
+    .ctl b {
+      font-weight: 500;
+      font-size: 10.5px;
+      min-width: 4ch;
+      text-align: right
+    }
+
+    input[type=range] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      height: 20px;
+      background: transparent;
+      cursor: pointer
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 2px;
+      background: var(--line)
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 11px;
+      height: 16px;
+      background: var(--ink);
+      margin-top: -7px;
+      border: none;
+      border-radius: 1px
+    }
+
+    input[type=range]::-moz-range-track {
+      height: 2px;
+      background: var(--line)
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width: 11px;
+      height: 16px;
+      background: var(--ink);
+      border: none;
+      border-radius: 1px
+    }
+
+    input[type=range]:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 3px
+    }
+
+    .chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .chip {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      padding: 0;
+      transition: transform .15s, box-shadow .15s
+    }
+
+    .chip i {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%
+    }
+
+    .chip:hover {
+      transform: scale(1.12)
+    }
+
+    .chip.on {
+      box-shadow: 0 0 0 2.5px var(--panel), 0 0 0 4px var(--ink)
+    }
+
+    .btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    .btns .wide {
+      grid-column: 1/-1
+    }
+
+    .abtn {
+      padding: 8px 4px;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background .15s, color .15s, opacity .2s;
+      background-size: cover;
+      background-position: center
+    }
+
+    .abtn:hover {
+      background-color: var(--ink);
+      color: var(--bg)
+    }
+
+    .abtn.on {
+      background-color: var(--ink);
+      color: var(--bg)
+    }
+
+    .abtn.off {
+      opacity: .3;
+      pointer-events: none
+    }
+
+    .abtn.arm {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg)
+    }
+
+    .abtn.lock {
+      opacity: .5;
+      border-style: dashed
+    }
+
+    .abtn.deliver {
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .abtn.deliver:hover {
+      background-color: var(--accent);
+      color: var(--bg)
+    }
+
+    .abtn:focus-visible,
+    .seg button:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 2px
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 13px 22px 16px;
+      border-top: 1px solid var(--line)
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      margin-bottom: 3px
+    }
+
+    .stat span {
+      color: var(--muted)
+    }
+
+    .stat b.rush {
+      color: var(--accent)
+    }
+
+    .keys {
+      margin-top: 10px;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .03em;
+      line-height: 1.9;
+      opacity: .85
+    }
+
+    #stage {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      touch-action: none
+    }
+
+    @media(pointer:fine) {
+      #stage {
+        cursor: none
+      }
+    }
+
+    @media(pointer:coarse) {
+      #stage {
+        cursor: auto
+      }
+    }
+
+    #stage canvas {
+      position: absolute;
+      inset: 0;
+      display: block
+    }
+
+    #bed {
+      inset: auto
+    }
+
+    #vig {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(ellipse at 50% 45%, transparent 52%, var(--vig) 100%)
+    }
+
+    #tintS,
+    #tintD {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      transition: background 2s ease
+    }
+
+    #tintS {
+      z-index: 2
+    }
+
+    #tintD {
+      z-index: 3
+    }
+
+    #grain {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4
+    }
+
+    #hint {
+      position: absolute;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: opacity .9s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 5
+    }
+
+    #chip {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 6;
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--ink);
+      padding: 6px 10px;
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase
+    }
+
+    body.folded #chip {
+      display: block
+    }
+
+    #fold,
+    #zstack .zbtn {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      background: var(--panel);
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      font: inherit;
+      font-size: 15px;
+      line-height: 1
+    }
+
+    #fold:hover,
+    #zstack .zbtn:hover {
+      background: var(--ink);
+      color: var(--bg)
+    }
+
+    #fold {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 6
+    }
+
+    #zstack {
+      position: absolute;
+      top: 14px;
+      right: 56px;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    #fold svg {
+      grid-area: 1/1
+    }
+
+    #icoSet {
+      display: none
+    }
+
+    body.folded #icoSet {
+      display: block
+    }
+
+    body:not(.folded) #icoSet {
+      display: none
+    }
+
+    body.folded #icoIn {
+      display: none
+    }
+
+    #icoOut {
+      display: none
+    }
+
+    body.folded #icoOut {
+      display: block
+    }
+
+    #toast {
+      position: absolute;
+      left: 50%;
+      bottom: 56px;
+      transform: translate(-50%, 8px);
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 10.5px;
+      letter-spacing: .06em;
+      padding: 8px 14px;
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      z-index: 7;
+      white-space: nowrap
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0)
+    }
+
+    #recdot {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 8;
+      display: none;
+      align-items: center;
+      gap: 7px;
+      background: var(--panel);
+      border: 1px solid var(--ink);
+      padding: 5px 11px;
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase
+    }
+
+    #recdot i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.1s infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    body.recording #recdot {
+      display: flex
+    }
+
+    #quest {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      width: 300px;
+      background: var(--panel);
+      border: 1px solid var(--ink);
+      padding: 9px 13px 8px;
+      pointer-events: none;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, .14)
+    }
+
+    #quest.done {
+      border-color: var(--accent);
+      animation: qflash .5s ease 2
+    }
+
+    @keyframes qflash {
+      50% {
+        box-shadow: 0 0 0 3px var(--accent)
+      }
+    }
+
+    #quest.rush {
+      border-color: var(--accent)
+    }
+
+    .qrow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted)
+    }
+
+    #qRank {
+      color: var(--accent)
+    }
+
+    #qCombo {
+      color: var(--ink);
+      font-weight: 600;
+      margin-left: 6px
+    }
+
+    #qEssWrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--ink)
+    }
+
+    #qEssWrap svg {
+      color: var(--accent)
+    }
+
+    #qEss {
+      display: inline-block
+    }
+
+    #qEss.pulse {
+      animation: pop .45s ease
+    }
+
+    @keyframes pop {
+      40% {
+        transform: scale(1.5)
+      }
+    }
+
+    #qText {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 1.3;
+      margin: 6px 0 2px;
+      color: var(--ink)
+    }
+
+    #qHint {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: .04em;
+      margin-bottom: 7px;
+      line-height: 1.5
+    }
+
+    #qHint:empty {
+      display: none
+    }
+
+    .qbar {
+      height: 4px;
+      background: var(--line);
+      margin-bottom: 7px
+    }
+
+    .qbar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width .3s ease
+    }
+
+    .qfoot {
+      font-size: 9px;
+      gap: 8px
+    }
+
+    #qTime {
+      color: var(--accent);
+      font-weight: 500
+    }
+
+    #qRew {
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500
+    }
+
+    #qRew svg {
+      color: var(--accent)
+    }
+
+    #qSkip {
+      pointer-events: auto;
+      font: inherit;
+      font-size: 8.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 2px 7px;
+      cursor: pointer
+    }
+
+    #qSkip:hover {
+      border-color: var(--ink);
+      color: var(--ink)
+    }
+
+    #quest.sb .qbar,
+    #quest.sb .qfoot {
+      display: none
+    }
+
+    @media(max-width:560px) {
+      #quest {
+        width: calc(100% - 104px)
+      }
+    }
+
+    #help,
+    #judge {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      background: rgba(18, 14, 8, .38)
+    }
+
+    #judge {
+      z-index: 32;
+      background: rgba(18, 14, 8, .45)
+    }
+
+    #help[hidden],
+    #judge[hidden] {
+      display: none
+    }
+
+    #helpCard {
+      background: var(--panel);
+      border: 1px solid var(--ink);
+      max-width: 580px;
+      width: calc(100% - 44px);
+      max-height: calc(100% - 60px);
+      overflow-y: auto;
+      padding: 26px 28px 20px;
+      box-shadow: 0 14px 44px rgba(0, 0, 0, .28)
+    }
+
+    #helpCard h3 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 24px;
+      margin-bottom: 8px
+    }
+
+    #helpCard .hintP {
+      font-size: 10.5px;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 14px
+    }
+
+    .hcols {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px
+    }
+
+    .hcols h4 {
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px
+    }
+
+    .hcols p {
+      font-size: 10px;
+      line-height: 1.95
+    }
+
+    .hach {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      font-size: 9.5px;
+      line-height: 1.9;
+      color: var(--muted)
+    }
+
+    .hach h4 {
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: var(--muted)
+    }
+
+    #helpClose {
+      margin-top: 16px;
+      width: 100%
+    }
+
+    #judgeCard {
+      background: var(--panel);
+      border: 1px solid var(--ink);
+      width: min(370px, calc(100% - 44px));
+      padding: 24px 26px 20px;
+      text-align: center;
+      box-shadow: 0 14px 44px rgba(0, 0, 0, .3)
+    }
+
+    #jGrade {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 88px;
+      line-height: 1;
+      margin: 4px 0 12px;
+      color: var(--accent)
+    }
+
+    .jrows {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 9px 0;
+      margin-bottom: 12px;
+      text-align: left
+    }
+
+    .jrow {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      padding: 3px 0
+    }
+
+    .jrow span {
+      color: var(--muted)
+    }
+
+    #jPay {
+      font-size: 11px;
+      margin-bottom: 14px;
+      font-weight: 500
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside id="rail">
+    <div id="railIn">
+      <header>
+        <p class="over">a gesture garden · v4.2 — the turning year</p>
+        <h1>
+          <svg width="26" height="30" viewBox="0 0 26 30" fill="none" stroke="currentColor" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M13 29 C12.2 21 12.4 11 15 2" stroke-width="1.5" />
+            <path d="M13.6 20 C8.6 19.4 5.2 15.8 4.6 10 C10.4 11.4 13.4 15.2 13.9 19.4" stroke-width="1.3" />
+            <path d="M14.6 13.5 C18.6 12.4 20.9 9.4 21.4 5 C16.7 6.2 14.6 9.5 14.4 13" stroke-width="1.3" />
+            <circle cx="15.6" cy="2.6" r="1.7" fill="currentColor" stroke="none" />
+          </svg>
+          Thicket
+        </h1>
+        <p class="sub">Garden through the turning year: named patrons commission work on deadlines, seasons bend growth
+          and essence, fireflies rise at dusk, aphids crawl at noon — and rare variants join your catalog.</p>
+      </header>
+
+      <section>
+        <h2>Growth rules</h2>
+        <div class="grid4" id="modes">
+          <button class="abtn" data-m="vine">Vine</button>
+          <button class="abtn" data-m="coral">Coral</button>
+          <button class="abtn" data-m="mycelium">Thread</button>
+          <button class="abtn" data-m="fern">Fern</button>
+          <button class="abtn" data-m="willow">Willow</button>
+          <button class="abtn" data-m="frost">Frost</button>
+          <button class="abtn" data-m="bamboo">Bamboo</button>
+          <button class="abtn" data-m="kelp">Kelp</button>
+          <button class="abtn" data-m="tendril">Tendril</button>
+          <button class="abtn" data-m="plume">Plume</button>
+          <button class="abtn" data-m="fungus">Fungus</button>
+          <button class="abtn" data-m="vein">Vein</button>
+          <button class="abtn" data-m="crystal">Crystal</button>
+          <button class="abtn" data-m="rock">Stone</button>
+        </div>
+        <p id="modeDesc"></p>
+        <div class="btns" style="margin-top:8px">
+          <button class="abtn wide" id="btnMeadow" aria-pressed="false">meadow · off</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Compositions</h2>
+        <div class="grid4" id="presets"></div>
+      </section>
+
+      <section>
+        <h2>Symmetry</h2>
+        <div class="seg small" id="sym">
+          <button data-s="free" class="on">Free</button>
+          <button data-s="mirror">Mirror</button>
+          <button data-s="rad4">Rad ×4</button>
+          <button data-s="rad6">Rad ×6</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Growth</h2>
+        <label class="ctl"><span class="row"><em>density</em><b id="v-density">55</b></span>
+          <input type="range" id="s-density" min="0" max="100" value="55"></label>
+        <label class="ctl"><span class="row"><em>curl</em><b id="v-curl">50</b></span>
+          <input type="range" id="s-curl" min="0" max="100" value="50"></label>
+        <label class="ctl"><span class="row"><em>wildness</em><b id="v-wild">35</b></span>
+          <input type="range" id="s-wild" min="0" max="100" value="35"></label>
+        <label class="ctl"><span class="row"><em>reach</em><b id="v-reach">50</b></span>
+          <input type="range" id="s-reach" min="0" max="100" value="50"></label>
+        <label class="ctl"><span class="row"><em>lean · light / root</em><b id="v-lean">0</b></span>
+          <input type="range" id="s-lean" min="-100" max="100" value="0"></label>
+      </section>
+
+      <section>
+        <h2>Weather &amp; tempo</h2>
+        <label class="ctl"><span class="row"><em>wind</em><b id="v-wind">15</b></span>
+          <input type="range" id="s-wind" min="0" max="100" value="15"></label>
+        <label class="ctl"><span class="row"><em>flourish</em><b id="v-flourish">40</b></span>
+          <input type="range" id="s-flourish" min="0" max="100" value="40"></label>
+        <label class="ctl"><span class="row"><em>tempo</em><b id="v-tempo">40</b></span>
+          <input type="range" id="s-tempo" min="0" max="100" value="40"></label>
+      </section>
+
+      <section>
+        <h2>Palette</h2>
+        <div class="chips" id="palettes"></div>
+      </section>
+
+      <section>
+        <h2>Glasshouse · upgrades</h2>
+        <div class="btns" id="shop"></div>
+      </section>
+
+      <section>
+        <h2>Shelf</h2>
+        <div class="btns" id="shelf"></div>
+      </section>
+
+      <section>
+        <h2>Actions</h2>
+        <div class="btns">
+          <button class="abtn deliver wide" id="btnDeliver">Deliver garden · K</button>
+          <button class="abtn" id="btnScatter">Scatter</button>
+          <button class="abtn" id="btnSeed">Reseed</button>
+          <button class="abtn off" id="btnUndo">Undo</button>
+          <button class="abtn off" id="btnRedo">Redo</button>
+          <button class="abtn off" id="btnReplay">Replay</button>
+          <button class="abtn" id="btnGraft" aria-pressed="false">Graft</button>
+          <button class="abtn" id="btnErase" aria-pressed="false">Erase</button>
+          <button class="abtn" id="btnLayer">New layer</button>
+          <button class="abtn" id="btnDice">Dice</button>
+          <button class="abtn" id="btnSandbox" aria-pressed="false">Sandbox</button>
+          <button class="abtn" id="btnClear">Clear</button>
+          <button class="abtn" id="btnSave">Save PNG</button>
+          <button class="abtn" id="btnCopy">Copy PNG</button>
+          <button class="abtn" id="btnOpen">Open file</button>
+          <button class="abtn" id="btnShare">Share link</button>
+          <button class="abtn wide" id="btnProj">Save project</button>
+          <button class="abtn wide" id="btnSvg">Save SVG</button>
+          <button class="abtn wide on" id="btnPlate" aria-pressed="true">print plate · on</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Ambience</h2>
+        <div class="btns">
+          <button class="abtn" id="btnChimes" aria-pressed="false">Chimes</button>
+          <button class="abtn on" id="btnDrift" aria-pressed="true">Drift</button>
+          <button class="abtn" id="btnGust">Gust</button>
+          <button class="abtn" id="btnRecord">Record</button>
+          <button class="abtn wide" id="btnHelp">Help</button>
+        </div>
+      </section>
+
+      <footer>
+        <div class="stat"><span>season · hour</span><b id="stSeason">spring · day</b></div>
+        <div class="stat"><span>rank</span><b id="stRank">seedling</b></div>
+        <div class="stat"><span>essence</span><b id="stEss">50</b></div>
+        <div class="stat"><span>commissions</span><b id="stQuests">00</b></div>
+        <div class="stat"><span>gardens judged</span><b id="stGardens">00</b></div>
+        <div class="stat"><span>catalog</span><b id="stCat">0 rares</b></div>
+        <div class="stat"><span>event</span><b id="stEvent">—</b></div>
+        <div class="stat"><span>living tips</span><b id="stTips">000</b></div>
+        <div class="stat"><span>frame rate</span><b id="stFps">60</b></div>
+        <div class="stat"><span>noise seed</span><b id="stSeed">01379</b></div>
+        <p class="keys">K deliver · patrons set deadlines · squash aphids<br>
+          fireflies rise at dusk · rare variants join the catalog<br>
+          locked rules & upgrades: tap twice to buy<br>
+          1–8 · T P F N · Q B rules · A meadow · J graft<br>
+          G scatter · D dice · W gust · M sym · R replay<br>
+          X erase · Z/Y undo · L layer · C C clear<br>
+          E reseed · S png · V svg · O open · H help · 0 fit</p>
+      </footer>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <canvas id="bed" aria-hidden="true"></canvas>
+    <canvas id="art" aria-hidden="true"></canvas>
+    <canvas id="live" aria-hidden="true"></canvas>
+    <div id="vig"></div>
+    <div id="tintS"></div>
+    <div id="tintD"></div>
+    <div id="grain"></div>
+    <p id="hint">draw a gesture · click patrons & fireflies · squash aphids · K delivers</p>
+    <div id="chip">vine · free</div>
+    <div id="recdot"><i></i>recording</div>
+    <div id="quest" role="status">
+      <div class="qrow">
+        <span><span id="qRank">seedling</span><span id="qCombo"></span></span>
+        <span id="qEssWrap"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M5 0 L10 5 L5 10 L0 5 Z" fill="currentColor" />
+          </svg><b id="qEss">50</b></span>
+      </div>
+      <p id="qText">…</p>
+      <p id="qHint"></p>
+      <div class="qbar"><i id="qFill"></i></div>
+      <div class="qrow qfoot">
+        <span id="qProg">0 / 1</span>
+        <span id="qTime"></span>
+        <span id="qRew"><svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M5 0 L10 5 L5 10 L0 5 Z" fill="currentColor" />
+          </svg><span id="qRewN">+20</span></span>
+        <button id="qSkip" title="skip this commission (resets streak & chain)">skip</button>
+      </div>
+    </div>
+    <div id="zstack">
+      <button id="zin" class="zbtn" aria-label="zoom in">+</button>
+      <button id="zout" class="zbtn" aria-label="zoom out">−</button>
+      <button id="zfit" class="zbtn" aria-label="reset view" title="fit (0)">⌂</button>
+    </div>
+    <button id="fold" aria-label="toggle panel" aria-expanded="true" title="toggle panel">
+      <svg id="icoIn" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 2 L4 7 L9 12" />
+      </svg>
+      <svg id="icoOut" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 2 L10 7 L5 12" />
+      </svg>
+      <svg id="icoSet" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"
+        stroke-linecap="round">
+        <path d="M1.5 4.5h11M1.5 9.5h11" />
+        <circle cx="5" cy="4.5" r="1.7" fill="currentColor" stroke="none" />
+        <circle cx="9.5" cy="9.5" r="1.7" fill="currentColor" stroke="none" />
+      </svg>
+    </button>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <div id="help" hidden role="dialog" aria-modal="true" aria-label="field guide">
+    <div id="helpCard">
+      <h3>Field guide</h3>
+      <p class="hintP">Draw a gesture — its speed and curvature shape the growth. Patrons commission work on deadlines;
+        deliver gardens (K) for grades and essence. Seasons turn every six minutes, bending growth and yields. Fireflies
+        rise at dusk; aphids crawl by day — squash them. Rare variants (5% of new growth) join your catalog.</p>
+      <div class="hcols">
+        <div>
+          <h4>rules</h4>
+          <p>1–8 quick rules<br>T tendril · P plume<br>F fungus · N vein<br>Q crystal · B stone<br>A meadow (buy first)
+          </p>
+        </div>
+        <div>
+          <h4>actions</h4>
+          <p>K deliver garden<br>G scatter · J graft<br>D dice · W gust<br>R replay · X erase<br>Z / Y undo · L layer
+          </p>
+        </div>
+        <div>
+          <h4>world</h4>
+          <p>wheel / pinch — zoom<br>space-drag — pan · 0 fit<br>H or ? — this card<br>locked: tap twice<br>winter —
+            frost is free</p>
+        </div>
+      </div>
+      <div class="hach" id="hAch"></div>
+      <div class="hach" id="hCat"></div>
+      <button id="helpClose" class="abtn">close</button>
+    </div>
+  </div>
+
+  <div id="judge" hidden role="dialog" aria-modal="true" aria-label="garden judgment">
+    <div id="judgeCard">
+      <p class="over">the society of gardeners finds</p>
+      <div id="jGrade">A</div>
+      <div class="jrows" id="jRows"></div>
+      <p id="jPay"></p>
+      <div class="btns">
+        <button class="abtn" id="jKeep">keep tending</button>
+        <button class="abtn" id="jNew">begin anew</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileIn" accept=".json,application/json" hidden>
+
+  <script>
+    'use strict';
+    const APP_VERSION = 4.2;
+
+    /* ================= error boundary ================= */
+    const errLog = [];
+    let errToasted = false;
+    function noteErr(where, e) {
+      errLog.push({ t: Date.now(), where, m: String((e && e.message) || e) });
+      if (errLog.length > 30) errLog.shift();
+      if (!errToasted)
+      {
+        errToasted = true;
+        try { toast('a hiccup occurred — the garden kept running'); } catch (_) { }
+      }
+    }
+    window.addEventListener('error', e => noteErr('window', e.error || e.message));
+    window.addEventListener('unhandledrejection', e => noteErr('promise', e.reason));
+
+    /* ================= helpers ================= */
+    const TAU = Math.PI * 2;
+    const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const isNum = v => typeof v === 'number' && isFinite(v);
+    function angTo(a, b) { let d = (b - a) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; }
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296
+      }
+    }
+    function shade(hex, amt) {
+      const nn = parseInt(hex.slice(1), 16);
+      let r = (nn >> 16) & 255, g = (nn >> 8) & 255, b = nn & 255;
+      if (amt >= 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
+      else { r *= 1 + amt; g *= 1 + amt; b *= 1 + amt; }
+      return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+    }
+    const colCache = new Map();
+    function ink(c) {
+      if (c[ 0 ] !== '#') return c;
+      let v = colCache.get(c);
+      if (!v) { v = []; for (let i = 0; i < 4; i++)v.push(shade(c, (i - 1.5) * 0.05)); colCache.set(c, v); }
+      return v[ (Math.random() * 4) | 0 ];
+    }
+    function widthAt(p) { return clamp((4.4 - p.v * 1.7) * (0.55 + (p.pr ?? 0.5) * 0.9), 0.9, 6.2); }
+    const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const P = new Uint8Array(512);
+    function reseedNoise(sd) {
+      const r = mulberry32(sd), p = new Uint8Array(256);
+      for (let i = 0; i < 256; i++)p[ i ] = i;
+      for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0, t = p[ i ]; p[ i ] = p[ j ]; p[ j ] = t; }
+      for (let i = 0; i < 512; i++)P[ i ] = p[ i & 255 ];
+    }
+    function vnoise(x, y) {
+      const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+      const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+      const a = P[ P[ xi & 255 ] + (yi & 255) ] / 255, b = P[ P[ (xi + 1) & 255 ] + (yi & 255) ] / 255,
+        c = P[ P[ xi & 255 ] + ((yi + 1) & 255) ] / 255, d = P[ P[ (xi + 1) & 255 ] + ((yi + 1) & 255) ] / 255;
+      return lerp(lerp(a, b, u), lerp(c, d, u), v);
+    }
+
+    /* ================= palettes ================= */
+    const PALETTES = {
+      herbarium: {
+        bg: '#F3EDDF', panel: '#EBE3D2', line: '#D6CBB2', ink: '#241E14', muted: '#8B7E66', accent: '#B23A2A',
+        strokes: [ '#241E14', '#4C5B4A', '#B23A2A', '#C0812F' ], particle: 'rgba(70,60,42,.45)', vig: '74,60,34', vigA: .07
+      },
+      verdigris: {
+        bg: '#E8EDE5', panel: '#DEE5DA', line: '#C4CEC0', ink: '#1C2A20', muted: '#6E7F6F', accent: '#8F3B2E',
+        strokes: [ '#1C2A20', '#2F6B4F', '#8F3B2E', '#B98A24' ], particle: 'rgba(30,46,34,.4)', vig: '24,44,30', vigA: .06
+      },
+      orchid: {
+        bg: '#EFE9F2', panel: '#E6DEEC', line: '#CFC3DE', ink: '#2A2033', muted: '#8779A0', accent: '#8E3B6B',
+        strokes: [ '#2A2033', '#5A4E7A', '#8E3B6B', '#B48A2E' ], particle: 'rgba(80,66,110,.4)', vig: '58,44,86', vigA: .06
+      },
+      nocturne: {
+        bg: '#14110D', panel: '#1B1712', line: '#352D22', ink: '#EAE1CE', muted: '#93876F', accent: '#E07A4F',
+        strokes: [ '#EAE1CE', '#D9A441', '#E07A4F', '#8A9B7C' ], particle: 'rgba(216,203,178,.4)', vig: '0,0,0', vigA: .34
+      },
+      deepwater: {
+        bg: '#0D1512', panel: '#111A16', line: '#26382F', ink: '#DCE6DC', muted: '#7C9184', accent: '#E0A458',
+        strokes: [ '#DCE6DC', '#7FA08C', '#E0A458', '#C75146' ], particle: 'rgba(196,220,204,.35)', vig: '0,0,0', vigA: .3
+      },
+      peat: {
+        bg: '#191411', panel: '#201A16', line: '#3A302A', ink: '#EDE2CE', muted: '#9C8B77', accent: '#D98E3B',
+        strokes: [ '#EDE2CE', '#B39868', '#D98E3B', '#8FA07E' ], particle: 'rgba(220,200,170,.35)', vig: '0,0,0', vigA: .32
+      }
+    };
+    let palName = 'herbarium', pal = PALETTES[ palName ];
+
+    /* ================= world time: seasons & day ================= */
+    const SEASONS = [
+      { n: 'spring', growth: 1.12, bloom: 1.15, ess: 1.0, note: 'growth quickens' },
+      { n: 'summer', growth: 1.0, bloom: 1.35, ess: 1.0, note: 'blooms come readily' },
+      { n: 'autumn', growth: 0.95, bloom: 1.0, ess: 1.35, note: 'essence falls with the leaves' },
+      { n: 'winter', growth: 0.85, bloom: 0.85, ess: 1.0, note: 'the frost rule is freely yours' } ];
+    const SEASON_LEN = 360, DAY_LEN = 240;
+    let seasonIdx = 0, seasonT = 0;
+    const season = () => SEASONS[ seasonIdx ];
+    function dayPhase() {
+      const p = (T / DAY_LEN) % 1;
+      if (p < 0.55) return 'day';
+      if (p < 0.65) return 'dusk';
+      if (p < 0.95) return 'night';
+      return 'dawn';
+    }
+    const isNight = () => { const k = dayPhase(); return k === 'dusk' || k === 'night'; };
+
+    /* ================= rules / params / state ================= */
+    const MODES = {
+      vine: {
+        forkMin: 1, forkMax: 2, spread: .55, lenMul: 1.25, widthMul: .8, depthBonus: 0, curlMul: 1, cap: 2400, speed: 2.0, bpBase: 9,
+        desc: 'slow curls — petal blossoms at the tips'
+      },
+      coral: {
+        forkMin: 2, forkMax: 3, spread: .9, lenMul: .62, widthMul: .65, depthBonus: -1, curlMul: .75, cap: 4200, speed: 2.7, extraFork: true, bpBase: 9,
+        desc: 'dense forking — clustered spore tips'
+      },
+      mycelium: {
+        forkMin: 1, forkMax: 2, spread: .32, lenMul: 1.6, widthMul: .5, depthBonus: 1, curlMul: .6, cap: 2600, speed: 1.7, bpBase: 9,
+        desc: 'long wandering threads — sporing tips'
+      },
+      fern: {
+        forkMin: 1, forkMax: 2, spread: .5, lenMul: .9, widthMul: .6, depthBonus: 0, curlMul: 1.4, cap: 3200, speed: 2.3, bpBase: 6.5,
+        desc: 'pinnate fronds — sori dust each pinna'
+      },
+      willow: {
+        forkMin: 1, forkMax: 2, spread: .35, lenMul: 1.75, widthMul: .55, depthBonus: 0, curlMul: .5, cap: 2600, speed: 2.1, grav: 1, taper: .7, bpBase: 9,
+        desc: 'weeping strands — gravity bends them, catkins dangle'
+      },
+      frost: {
+        forkMin: 2, forkMax: 3, spread: .7, lenMul: .55, widthMul: .5, depthBonus: 1, curlMul: .12, cap: 4200, speed: 2.6, snap: Math.PI / 6, taper: 1, bpBase: 8,
+        desc: 'hexagonal dendrites — needles snap to a crystal lattice'
+      },
+      bamboo: {
+        forkMin: 1, forkMax: 1, spread: .3, lenMul: 2.3, widthMul: .75, depthBonus: 0, curlMul: .15, cap: 2200, speed: 1.9, nodes: true, straight: .9, taper: .5, bpBase: 8,
+        desc: 'jointed culms climb — rings at the nodes, blades at the joints'
+      },
+      kelp: {
+        forkMin: 1, forkMax: 2, spread: .45, lenMul: 1.9, widthMul: .6, depthBonus: 1, curlMul: .8, cap: 2600, speed: 1.6, buoy: 1, taper: .75, bpBase: 6.5,
+        desc: 'buoyant ribbons rise — floats and swaying blades'
+      },
+      tendril: {
+        forkMin: 1, forkMax: 2, spread: .5, lenMul: 1.35, widthMul: .75, depthBonus: 0, curlMul: 1.55, cap: 2600, speed: 1.8, coils: true, taper: .8, bpBase: 8,
+        desc: 'curling vines — every tip winds into a spiral coil'
+      },
+      plume: {
+        forkMin: 1, forkMax: 1, spread: .4, lenMul: 1.0, widthMul: .7, depthBonus: 0, curlMul: 1.2, cap: 2400, speed: 1.9, bpBase: 5.5,
+        desc: 'feather barbs in pairs — soft down, plume crown'
+      },
+      fungus: {
+        forkMin: 1, forkMax: 1, spread: .3, lenMul: 1.4, widthMul: .95, depthBonus: 1, curlMul: .35, cap: 1600, speed: 1.6, straight: .8, taper: .3, bpBase: 16,
+        desc: 'stalks climb — domed caps open, gills beneath'
+      },
+      vein: {
+        forkMin: 1, forkMax: 2, spread: .42, lenMul: 1.5, widthMul: .7, depthBonus: 1, curlMul: .55, cap: 2000, speed: 1.9, taper: .6, bpBase: 7.5,
+        desc: 'branching veins — wandering tips fuse into loops'
+      },
+      crystal: {
+        forkMin: 1, forkMax: 2, spread: .55, lenMul: 1.5, widthMul: .8, depthBonus: 0, curlMul: .06, cap: 1400, speed: 1.7, crystal: true, bpBase: 9,
+        desc: 'mineral seam — banded prisms rise, twin and glint'
+      },
+      rock: {
+        forkMin: 1, forkMax: 1, spread: .4, lenMul: 1, widthMul: 1, depthBonus: 1, curlMul: .4, cap: 1200, speed: 2.0, rock: true, bpBase: 7,
+        desc: 'stony ground — boulders, pebbles and moss gather'
+      }
+    };
+    const RULE_KEYS = Object.keys(MODES);
+    const pickRule = () => RULE_KEYS[ (Math.random() * RULE_KEYS.length) | 0 ];
+    const SYM_LABEL = { free: 'free', mirror: 'mirror', rad4: 'radial ×4', rad6: 'radial ×6' };
+    const params = {
+      mode: 'vine', sym: 'free', meadow: false, density: .55, curl: .5, wild: .35, reach: .5,
+      trop: 0, wind: .15, flourish: .4, tempo: .4
+    };
+    const tempoMul = () => (0.3 + params.tempo * 1.8) * season().growth;
+    let seed = 1379; reseedNoise(seed);
+
+    let specimens = [], tips = [], spines = [], bloomQueue = [], fx = [], motes = [], flies = [], aphids = [];
+    let actions = [], redoActions = [], groupSeq = 0, beds = 0;
+    let branchCount = 0, lastBC = 0, totalOps = 0, recSeq = 0, lastEnergy = 0;
+    let replay = null, eraseOn = false, graftOn = false;
+    let eraseSess = false, eraseSet = null, eraseLast = null, eraseDirty = false;
+    let graftDrag = null, crowded = false;
+    let driftOn = true, soundOn = false, plateOn = true, gust = 0;
+    let fxOn = true, perfTier = 0;
+    const OP_LIMIT = 140000;
+
+    /* ================= game layer ================= */
+    const UNLOCK_COST = {
+      mycelium: 25, fern: 25, willow: 45, kelp: 45, bamboo: 65, tendril: 65, plume: 65,
+      fungus: 85, vein: 85, crystal: 110, stone: 110
+    };
+    const MEADOW_COST = 75;
+    const RANKS = [ [ 0, 'seedling' ], [ 3, 'sprout' ], [ 6, 'sapling' ], [ 10, 'forager' ],
+    [ 14, 'horticulturist' ], [ 19, 'botanist' ], [ 25, 'master gardener' ] ];
+    const RULEKEY = {
+      vine: '1', coral: '2', mycelium: '3', fern: '4', willow: '5', frost: '6', bamboo: '7',
+      kelp: '8', tendril: 'T', plume: 'P', fungus: 'F', vein: 'N', crystal: 'Q', stone: 'B'
+    };
+    const game = {
+      ess: 50, questsDone: 0, streak: 0, rankIdx: 0, meadow: false, sandbox: false, bloomsLife: 0,
+      unlocked: new Set([ 'vine', 'coral' ]),
+      gardensDone: 0, bestGrade: '—', chain: 0, lastDeliverOps: 0, caught: 0, glow: 0, squash: 0, grafts: 0,
+      upgrades: { soil: 0, bell: 0, roots: 0, purse: 0 }, ach: {}, cat: {}
+    };
+    const ruleAvailable = m => game.sandbox || game.unlocked.has(m) || (seasonIdx === 3 && m === 'frost');
+    const meadowAvailable = () => game.sandbox || game.meadow;
+    const tipCap = () => (perfTier >= 2 ? 480 : 800) + game.upgrades.roots * 150;
+    function bloomDropCh() {
+      let ch = (0.22 + game.upgrades.soil * 0.12) * season().ess;
+      if (rushT > 0) ch *= 2;
+      if (aphids.length) ch *= 0.35;
+      return ch;
+    }
+    const GRADE_ORDER = [ '—', 'D', 'C', 'B', 'A', 'S' ];
+    const gradeRank = g => GRADE_ORDER.indexOf(g);
+
+    let gSaveT = 0;
+    function saveGameSoon() { clearTimeout(gSaveT); gSaveT = setTimeout(saveGame, 400); }
+    function saveGame() {
+      try
+      {
+        localStorage.setItem('thicket.game', JSON.stringify({
+          ess: game.ess, questsDone: game.questsDone, streak: game.streak, rankIdx: game.rankIdx,
+          meadow: game.meadow, sandbox: game.sandbox, bloomsLife: game.bloomsLife,
+          gardensDone: game.gardensDone, bestGrade: game.bestGrade, chain: game.chain,
+          lastDeliverOps: game.lastDeliverOps, caught: game.caught, glow: game.glow, squash: game.squash,
+          grafts: game.grafts, upgrades: game.upgrades, ach: game.ach, cat: game.cat,
+          seasonIdx, seasonT: Math.round(seasonT), unlocked: [ ...game.unlocked ]
+        }));
+      } catch (e) { }
+    }
+    function loadGame() {
+      try
+      {
+        const d = JSON.parse(localStorage.getItem('thicket.game') || 'null'); if (!d) return;
+        if (isNum(d.ess)) game.ess = clamp(d.ess, 0, 99999);
+        game.questsDone = Math.max(0, d.questsDone | 0);
+        game.streak = Math.max(0, d.streak | 0);
+        game.rankIdx = clamp(d.rankIdx | 0, 0, RANKS.length - 1);
+        game.meadow = !!d.meadow; game.sandbox = !!d.sandbox;
+        game.bloomsLife = Math.max(0, d.bloomsLife | 0);
+        game.gardensDone = Math.max(0, d.gardensDone | 0);
+        if (typeof d.bestGrade === 'string' && GRADE_ORDER.includes(d.bestGrade)) game.bestGrade = d.bestGrade;
+        game.chain = clamp(d.chain | 0, 0, 9);
+        game.lastDeliverOps = Math.max(0, d.lastDeliverOps | 0);
+        game.caught = Math.max(0, d.caught | 0);
+        game.glow = Math.max(0, d.glow | 0);
+        game.squash = Math.max(0, d.squash | 0);
+        game.grafts = Math.max(0, d.grafts | 0);
+        if (d.upgrades && typeof d.upgrades === 'object')
+          for (const k in game.upgrades) if (isNum(d.upgrades[ k ])) game.upgrades[ k ] = clamp(d.upgrades[ k ] | 0, 0, 2);
+        if (d.ach && typeof d.ach === 'object') game.ach = d.ach;
+        if (d.cat && typeof d.cat === 'object') game.cat = d.cat;
+        if (isNum(d.seasonIdx)) { seasonIdx = clamp(d.seasonIdx | 0, 0, 3); }
+        if (isNum(d.seasonT)) seasonT = clamp(d.seasonT, 0, SEASON_LEN);
+        if (Array.isArray(d.unlocked)) d.unlocked.forEach(m => { if (MODES[ m ]) game.unlocked.add(m); });
+        game.unlocked.add('vine'); game.unlocked.add('coral');
+      } catch (e) { }
+    }
+    function pulseEss() {
+      const e = $('qEss'); if (!e) return;
+      e.textContent = game.ess;
+      e.classList.remove('pulse'); void e.offsetWidth; e.classList.add('pulse');
+      const s = $('stEss'); if (s) s.textContent = game.ess;
+    }
+
+    /* ---------- two-stage purchase ---------- */
+    let armBuy = null, armT = 0, armBtn = null;
+    function clearArm() { if (armBtn) { armBtn.classList.remove('arm'); armBtn = null; } armBuy = null; }
+    function tryBuy(id, label, cost, btn, doFn) {
+      if (armBuy === id && Date.now() - armT < 2600)
+      {
+        if (game.ess < cost)
+        {
+          toast(`not enough essence — you have ${game.ess}, ${label} costs ${cost}`);
+          clearArm(); return;
+        }
+        game.ess -= cost; clearArm(); pulseEss(); jingle(); saveGameSoon(); doFn();
+      } else
+      {
+        clearArm(); armBuy = id; armT = Date.now(); armBtn = btn;
+        if (btn) btn.classList.add('arm');
+        toast(`${label} — press again to buy for ${cost} essence`);
+      }
+    }
+
+    /* ---------- achievements ---------- */
+    const ACH = [
+      { id: 'first', n: 'First Sprout', d: 'grow your first specimen', t: () => specimens.length >= 1 },
+      { id: 'b50', n: 'Florist', d: '50 lifetime blooms', t: () => game.bloomsLife >= 50 },
+      { id: 'q10', n: 'Dependable', d: '10 commissions delivered', t: () => game.questsDone >= 10 },
+      { id: 'g5', n: 'Grafter', d: '5 grafts', t: () => game.grafts >= 5 },
+      { id: 'f5', n: 'Lepidopterist', d: 'catch 5 patrons', t: () => game.caught >= 5 },
+      { id: 'lan', n: 'Lantern', d: 'catch 3 fireflies', t: () => game.glow >= 3 },
+      { id: 'bane', n: 'Gardener’s Bane', d: 'squash 5 aphids', t: () => game.squash >= 5 },
+      { id: 'alm', n: 'Almanac', d: 'collect 8 rare variants', t: () => Object.keys(game.cat).length >= 8 },
+      { id: 'show', n: 'Showpiece', d: 'earn an S-grade garden', t: () => gradeRank(game.bestGrade) >= 4 },
+      { id: 'ex3', n: 'Exhibitor', d: 'deliver 3 gardens', t: () => game.gardensDone >= 3 },
+      { id: 'rank', n: 'Master Gardener', d: 'reach the top rank', t: () => game.rankIdx >= RANKS.length - 1 },
+      {
+        id: 'all', n: 'Collector', d: 'unlock every rule and meadow',
+        t: () => game.unlocked.size >= RULE_KEYS.length && game.meadow
+      }
+    ];
+    function checkAch() {
+      for (const a of ACH)
+      {
+        if (game.ach[ a.id ]) continue;
+        let ok = false; try { ok = a.t(); } catch (e) { }
+        if (ok)
+        {
+          game.ach[ a.id ] = 1; game.ess += 10; pulseEss();
+          toast('◆ ' + a.n + ' — ' + a.d + ' (+10)'); jingle(); saveGameSoon();
+        }
+      }
+    }
+    function fillAch() {
+      const el = $('hAch'); if (!el) return;
+      el.innerHTML = '<h4>achievements</h4>' + ACH.map(a => {
+        const got = !!game.ach[ a.id ];
+        return `<${got ? 'b' : 'span'} style="${got ? 'color:var(--ink)' : ''}">${got ? '◆' : '◇'} ${a.n}</${got ? 'b' : 'span'}>`
+          + ` <span style="opacity:.75">· ${a.d}</span>`;
+      }).join('<br>');
+    }
+    function fillCatalog() {
+      const el = $('hCat'); if (!el) return;
+      const keys = Object.keys(game.cat);
+      el.innerHTML = '<h4>catalog · rare variants (' + keys.length + ')</h4>'
+        + (keys.length ? keys.map(k => {
+          const i = k.indexOf(':');
+          return '◆ ' + k.slice(i + 1) + ' ' + k.slice(0, i);
+        }).join(' · ')
+          : 'none yet — rare variants appear on new growth (about 1 in 20)');
+    }
+
+    /* ---------- named patrons ---------- */
+    const PATRONS = [ 'Madame Odette', 'Old Hollis', 'Sister Wren', 'The Clockmaker',
+      'Lady Fenwick', 'Professor Moss', 'Beekeeper Bram', 'The Twins' ];
+    function wrapContract(q) {
+      if (game.questsDone < 3 || game.sandbox || !q) return q;
+      if (Math.random() < 0.55)
+      {
+        const p = PATRONS[ (Math.random() * PATRONS.length) | 0 ];
+        q.patron = p;
+        q.reward = Math.round(q.reward * 1.25);
+        q.text = p + ' requests — ' + q.text;
+        q.deadline = T + 100 + game.rankIdx * 10;
+      }
+      return q;
+    }
+
+    /* ---------- commissions ---------- */
+    const QTPL = {
+      first: {
+        w: 0, make() {
+          return {
+            need: 1, reward: 20,
+            text: 'Grow your first specimen',
+            hint: 'draw any gesture on the paper — a tap plants a seedling',
+            ev: t => t === 'specimen' ? 1 : 0
+          }
+        }
+      },
+      branches: {
+        w: 3, make(r) {
+          const n = 14 + r * 6; return {
+            need: n, reward: 16 + n,
+            text: `Grow ${n} branches`,
+            hint: 'wildness and density invite forking',
+            ev: t => t === 'branch' ? 1 : 0
+          }
+        }
+      },
+      blooms: {
+        w: 3, make(r) {
+          const n = 6 + r * 2; return {
+            need: n, reward: 18 + n,
+            text: `Let ${n} blooms open`,
+            hint: 'flourish invites blossoms; blooms shed essence and draw guests',
+            ev: t => t === 'bloom' ? 1 : 0
+          }
+        }
+      },
+      species: {
+        w: 3, make(r) {
+          const av = RULE_KEYS.filter(ruleAvailable);
+          const m = av[ (Math.random() * av.length) | 0 ];
+          return {
+            need: 1, reward: 22 + r * 3, text: `Grow a ${m}`,
+            hint: `select the rule with ${RULEKEY[ m ]}, then draw`,
+            ev: (t, d) => t === 'specimen' && d.rule === m ? 1 : 0
+          }
+        }
+      },
+      energy: {
+        w: 2, make(r) {
+          const v = Math.min(.85, .5 + r * .04); return {
+            need: 1, reward: 24,
+            text: `Swift gesture — energy above ${v.toFixed(2)}`,
+            hint: 'fast, sweeping strokes carry more energy',
+            ev: (t, d) => t === 'gesture' && d.energy >= v ? 1 : 0
+          }
+        }
+      },
+      graft: {
+        w: 2, make(r) {
+          const n = r < 3 ? 1 : 2; return {
+            need: n, reward: 26,
+            text: `Graft ${n > 1 ? n + ' new growths' : 'new growth'} from a stem`,
+            hint: 'press J, then drag out from any existing stem',
+            ev: t => t === 'graft' ? 1 : 0
+          }
+        }
+      },
+      patron: {
+        w: 2, make() {
+          return {
+            need: 2, reward: 30,
+            text: 'Catch 2 visiting patrons',
+            hint: 'blooms draw butterflies by day — click them as they flutter',
+            ev: t => t === 'patron' ? 1 : 0
+          }
+        }
+      },
+      glow: {
+        w: 1.5, make() {
+          return {
+            need: 1, reward: 24,
+            text: 'Catch a firefly after dark',
+            hint: 'they rise at dusk and drift till dawn — click them',
+            ev: t => t === 'firefly' ? 1 : 0
+          }
+        }
+      },
+      pest: {
+        w: 1.5, make() {
+          return {
+            need: 2, reward: 22,
+            text: 'Squash 2 aphids',
+            hint: 'tiny dark pests nibble the beds — click them away',
+            ev: t => t === 'pest' ? 1 : 0
+          }
+        }
+      },
+      deliver: {
+        w: 1.5, make() {
+          return {
+            need: 1, reward: 26,
+            text: 'Deliver a garden to the Society',
+            hint: 'press K — judged on coverage, variety, blooms and craft',
+            ev: t => t === 'deliver' ? 1 : 0
+          }
+        }
+      },
+      sky: {
+        w: 2, make() {
+          return {
+            need: 1, reward: 28,
+            text: 'Touch the sky — reach the top edge with new growth',
+            hint: 'the lean slider pulls growth upward',
+            poll() {
+              let hit = 0;
+              for (const s of specimens) if (s.group > this.g0 && s.by0 < 40) { hit = 1; break; }
+              return hit;
+            }
+          }
+        }
+      },
+      span: {
+        w: 2, make() {
+          return {
+            need: 1, reward: 28,
+            text: 'Spread wide — one growth spanning over half the garden',
+            hint: 'long strokes and high reach help',
+            poll() {
+              let hit = 0;
+              for (const s of specimens) if (s.group > this.g0 && s.bx1 - s.bx0 > worldW * 0.55) { hit = 1; break; }
+              return hit;
+            }
+          }
+        }
+      },
+      sym: {
+        w: 2, make(r) {
+          const s = [ 'mirror', 'rad4', 'rad6' ][ (Math.random() * 3) | 0 ];
+          const n = 2 + Math.floor(r / 2);
+          return {
+            need: n, reward: 30, text: `Grow ${n} specimens in ${SYM_LABEL[ s ]} symmetry`,
+            hint: 'M cycles symmetry — every copy counts',
+            ev: t => t === 'specimen' && params.sym === s ? 1 : 0
+          }
+        }
+      },
+      mix: {
+        w: 2, make() {
+          return {
+            need: 3, reward: 34,
+            text: 'Biodiversity — three different species in the garden',
+            hint: 'meadow grows a random species per gesture (A)',
+            poll() {
+              const set = new Set();
+              for (const s of specimens) if (s.group > this.g0) set.add(s.rule);
+              return Math.max(0, set.size - this.prog);
+            }
+          }
+        }
+      },
+      replay: {
+        w: 1.5, make() {
+          return {
+            need: 1, reward: 14,
+            text: 'Watch a replay of your garden',
+            hint: 'press R — every mark regrows in its true order',
+            ev: t => t === 'replay' ? 1 : 0
+          }
+        }
+      },
+      gust: {
+        w: 1, make() {
+          return {
+            need: 1, reward: 12,
+            text: 'Stir the air with a gust', hint: 'press W',
+            ev: t => t === 'gust' ? 1 : 0
+          }
+        }
+      },
+      erase: {
+        w: 1, make() {
+          return {
+            need: 1, reward: 12,
+            text: 'Prune — erase one growth',
+            hint: 'press X, then drag across a plant',
+            ev: t => t === 'erase' ? 1 : 0
+          }
+        }
+      }
+    };
+    let cur = null, lastTpl = '';
+    function pickQuest() {
+      const r = game.rankIdx;
+      const keys = Object.keys(QTPL).filter(k => {
+        if (k === 'first') return false;
+        if (k === lastTpl) return false;
+        if (k === 'mix' && !game.meadow) return false;
+        return true;
+      });
+      let tot = 0; for (const k of keys) tot += QTPL[ k ].w;
+      let x = Math.random() * tot;
+      for (const k of keys) { x -= QTPL[ k ].w; if (x <= 0) { lastTpl = k; return QTPL[ k ].make(r); } }
+      lastTpl = 'branches'; return QTPL.branches.make(r);
+    }
+    function updateQuestHUD() {
+      $('qRank').textContent = game.sandbox ? 'sandbox' : RANKS[ game.rankIdx ][ 1 ];
+      $('qCombo').textContent = (!game.sandbox && game.streak >= 2) ? '×' + game.streak : '';
+      $('qEss').textContent = game.ess;
+      const card = $('quest');
+      if (!cur) return;
+      card.classList.remove('done', 'sb');
+      card.classList.toggle('rush', rushT > 0);
+      $('qText').textContent = cur.text;
+      $('qHint').textContent = cur.hint || '';
+      $('qProg').textContent = `${cur.prog} / ${cur.need}`;
+      $('qTime').textContent = '';
+      $('qRewN').textContent = '+' + cur.reward;
+      $('qFill').style.width = Math.min(100, cur.prog / cur.need * 100) + '%';
+    }
+    function showSandbox() {
+      const card = $('quest');
+      card.classList.remove('done'); card.classList.add('sb');
+      $('qRank').textContent = 'sandbox'; $('qCombo').textContent = '';
+      $('qEss').textContent = game.ess;
+      $('qText').textContent = 'Free garden — draw anything';
+      $('qHint').textContent = 'every rule is open; commissions are paused';
+      $('qFill').style.width = '0'; $('qTime').textContent = '';
+    }
+    function nextQuest() {
+      if (game.sandbox) { cur = null; showSandbox(); return; }
+      let q;
+      if (game.questsDone === 0) { q = QTPL.first.make(0); lastTpl = 'first'; }
+      else if (game.questsDone === 1) { q = QTPL.blooms.make(0); lastTpl = 'blooms'; }
+      else if (game.questsDone === 2) { q = QTPL.branches.make(0); lastTpl = 'branches'; }
+      else q = wrapContract(pickQuest());
+      cur = q; cur.prog = 0; cur.g0 = groupSeq; cur.done = false;
+      updateQuestHUD(); saveGameSoon();
+    }
+    function addProg(n) {
+      if (!cur || cur.done) return;
+      cur.prog = Math.min(cur.need, cur.prog + n);
+      $('qProg').textContent = `${cur.prog} / ${cur.need}`;
+      $('qFill').style.width = Math.min(100, cur.prog / cur.need * 100) + '%';
+      if (cur.prog >= cur.need) completeQuest();
+    }
+    function completeQuest() {
+      if (!cur || cur.done) return;
+      cur.done = true;
+      const bonus = Math.min(20, game.streak * 2);
+      const gain = cur.reward + bonus;
+      game.ess += gain; game.questsDone++; game.streak++;
+      const card = $('quest'); card.classList.add('done');
+      $('qFill').style.width = '100%';
+      $('qText').textContent = 'Commission complete';
+      $('qHint').textContent = `+${gain} essence${bonus ? ` · streak ${game.streak}` : ''}`;
+      $('qProg').textContent = 'done'; $('qTime').textContent = '';
+      jingle(); pulseEss(); checkAch(); saveGameSoon();
+      let ri = 0; for (let i = 0; i < RANKS.length; i++)if (game.questsDone >= RANKS[ i ][ 0 ]) ri = i;
+      if (ri > game.rankIdx)
+      {
+        game.rankIdx = ri; game.ess += 20;
+        setTimeout(() => {
+          fanfare(); pulseEss(); checkAch();
+          toast(`rank up — ${RANKS[ ri ][ 1 ]} · +20 essence`); saveGameSoon();
+        }, 750);
+      }
+      if (!soundOn && game.questsDone === 1)
+        setTimeout(() => toast('tip — chimes add fanfares to completions'), 2100);
+      setTimeout(() => { cur = null; nextQuest(); }, 1900);
+      updateReadout();
+    }
+    function gameEvent(type, d) {
+      if (!cur || cur.done || game.sandbox) return;
+      const add = cur.ev ? cur.ev(type, d || {}) : 0;
+      if (add) addProg(add);
+    }
+    function pollQuest() {
+      if (!cur || cur.done || game.sandbox || !cur.poll) return;
+      const add = cur.poll();
+      if (add) addProg(add);
+    }
+    function skipQuest() {
+      if (game.sandbox || !cur || cur.done) return;
+      game.streak = 0; game.chain = 0; cur = null;
+      toast('commission skipped — streak & chain reset');
+      nextQuest(); saveGameSoon();
+    }
+
+    /* ---------- glasshouse ---------- */
+    const UPGRADES = [
+      { id: 'soil', n: 'rich soil', max: 2, cost: t => 60 + t * 60, d: '+12% essence from blooms per tier' },
+      { id: 'bell', n: 'butterfly bell', max: 2, cost: t => 50 + t * 50, d: 'guests visit more often per tier' },
+      { id: 'roots', n: 'deep roots', max: 2, cost: t => 80 + t * 80, d: '+150 living tips per tier' },
+      { id: 'purse', n: 'seed purse', max: 1, cost: () => 90, d: 'scatter costs nothing' }
+    ];
+    const shopBtns = {};
+    function buildShop() {
+      const el = $('shop');
+      UPGRADES.forEach(u => {
+        const b = document.createElement('button');
+        b.className = 'abtn'; b.title = u.d;
+        b.onclick = () => {
+          const t = game.upgrades[ u.id ];
+          if (t >= u.max) { toast(u.n + ' is already at its limit'); return; }
+          tryBuy('up:' + u.id, u.n, u.cost(t), b, () => {
+            game.upgrades[ u.id ]++;
+            refreshShop(); pulseEss(); checkAch();
+            toast(u.n + ' improved — ' + u.d);
+          });
+        };
+        shopBtns[ u.id ] = b; el.appendChild(b);
+      });
+    }
+    function refreshShop() {
+      for (const u of UPGRADES)
+      {
+        const b = shopBtns[ u.id ]; if (!b) continue;
+        b.classList.remove('arm', 'on');
+        const t = game.upgrades[ u.id ];
+        if (t >= u.max) { b.textContent = `${u.n} · max`; b.classList.add('on'); }
+        else b.textContent = `${u.n} ${t + 1}/${u.max} · ${u.cost(t)}`;
+      }
+    }
+
+    /* ---------- rule & meadow unlocking ---------- */
+    function selectRule(m) {
+      const btn = document.querySelector(`#modes button[data-m="${m}"]`);
+      if (ruleAvailable(m)) { clearArm(); setMode(m); return; }
+      tryBuy('rule:' + m, m, UNLOCK_COST[ m ], btn, () => {
+        game.unlocked.add(m);
+        refreshRuleButtons(); refreshShop();
+        toast(m + ' unlocked'); checkAch();
+        setMode(m);
+      });
+    }
+    function selectMeadow() {
+      const b = $('btnMeadow');
+      if (meadowAvailable()) { clearArm(); toggleMeadow(); return; }
+      tryBuy('meadow', 'meadow', MEADOW_COST, b, () => {
+        game.meadow = true; params.meadow = true;
+        refreshRuleButtons(); syncMeadowBtn();
+        toast('meadow unlocked — every gesture grows a random species');
+        checkAch();
+      });
+    }
+    function toggleSandbox() {
+      game.sandbox = !game.sandbox;
+      const b = $('btnSandbox');
+      b.classList.toggle('on', game.sandbox); setPressed(b, game.sandbox);
+      if (!game.sandbox && !ruleAvailable(params.mode)) params.mode = 'vine';
+      refreshRuleButtons(); syncMeadowBtn(); nextQuest(); saveGameSoon();
+      toast(game.sandbox ? 'sandbox — everything open, commissions paused'
+        : 'back to the apprenticeship');
+    }
+    function refreshRuleButtons() {
+      modeBtns.forEach(b => {
+        const m = b.dataset.m, label = b.dataset.label;
+        b.classList.remove('lock', 'arm');
+        if (ruleAvailable(m)) { b.textContent = label; }
+        else { b.textContent = `${label} ·${UNLOCK_COST[ m ]}`; b.classList.add('lock'); }
+      });
+    }
+
+    /* ================= viewport ================= */
+    let worldW = 0, worldH = 0;
+    const view = { x: 0, y: 0, s: 1 };
+    function worldTransform(g) {
+      g.setTransform(DPR * view.s, 0, 0, DPR * view.s, -view.x * view.s * DPR, -view.y * view.s * DPR);
+    }
+    function screenTransform(g) { g.setTransform(DPR, 0, 0, DPR, 0, 0); }
+    function toWorld(p) { return { x: view.x + p.x / view.s, y: view.y + p.y / view.s }; }
+    function clampView() {
+      view.x = clamp(view.x, -worldW * 0.75, worldW * 0.75);
+      view.y = clamp(view.y, -worldH * 0.75, worldH * 0.75);
+    }
+    function applyView() {
+      worldTransform(actx);
+      actx.lineCap = 'round'; actx.lineJoin = 'round';
+      bedC.style.left = (-view.x * view.s) + 'px';
+      bedC.style.top = (-view.y * view.s) + 'px';
+      bedC.style.width = (worldW * view.s) + 'px';
+      bedC.style.height = (worldH * view.s) + 'px';
+      const z = $('stZoom'); if (z) z.textContent = Math.round(view.s * 100) + '%';
+    }
+    function zoomAt(px, py, factor) {
+      const ns = clamp(view.s * factor, 0.4, 6);
+      const wx = view.x + px / view.s, wy = view.y + py / view.s;
+      view.s = ns; view.x = wx - px / ns; view.y = wy - py / ns;
+      clampView(); applyView();
+    }
+    function resetView() { view.x = 0; view.y = 0; view.s = 1; applyView(); }
+
+    /* ================= dom / canvases ================= */
+    const $ = id => document.getElementById(id);
+    const stage = $('stage'), artC = $('art'), liveC = $('live'), bedC = $('bed');
+    const actx = artC.getContext('2d'), lctx = liveC.getContext('2d'), bctx = bedC.getContext('2d');
+    let W = 0, H = 0, DPR = 1, stageRect = stage.getBoundingClientRect();
+    let particles = [], particlesInited = false;
+
+    function initBed() {
+      bedC.width = Math.round(worldW * DPR);
+      bedC.height = Math.round(worldH * DPR);
+    }
+    function resize() {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      if (!w || !h) return;
+      stageRect = stage.getBoundingClientRect();
+      const prevDPR = DPR;
+      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      if (!worldW) { worldW = Math.round(w); worldH = Math.round(h); initBed(); }
+      const snap = c => {
+        if (c.width > 0)
+        {
+          const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
+          t.getContext('2d').drawImage(c, 0, 0); return t;
+        } return null;
+      };
+      const tA = snap(artC);
+      for (const c of [ artC, liveC ])
+      {
+        c.width = Math.round(w * DPR); c.height = Math.round(h * DPR);
+        c.style.width = w + 'px'; c.style.height = h + 'px';
+      }
+      applyView();
+      if (tA)
+      {
+        actx.save(); screenTransform(actx);
+        actx.drawImage(tA, 0, 0, tA.width, tA.height, 0, 0, tA.width / prevDPR, tA.height / prevDPR);
+        actx.restore();
+      }
+      if (!particlesInited && worldW) { initParticles(); particlesInited = true; }
+    }
+    new ResizeObserver(resize).observe(stage);
+    resize();
+
+    /* ================= painters ================= */
+    function seg(g, x1, y1, x2, y2, w, c) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+    function paintPoly(g, pts, fill, stroke, sw) {
+      g.beginPath(); g.moveTo(pts[ 0 ][ 0 ], pts[ 0 ][ 1 ]);
+      for (let i = 1; i < pts.length; i++)g.lineTo(pts[ i ][ 0 ], pts[ i ][ 1 ]);
+      g.closePath();
+      if (fill) { g.fillStyle = fill; g.fill(); }
+      if (stroke) { g.strokeStyle = stroke; g.lineWidth = sw || 1; g.stroke(); }
+    }
+    function paintDot(p, g = actx) { g.globalAlpha = p.a; g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.r, 0, TAU); g.fill(); g.globalAlpha = 1; }
+    function paintBloom(parts, g = actx) {
+      for (const p of parts)
+      {
+        if (p.kind === 'dot') paintDot(p, g);
+        else
+        {
+          g.globalAlpha = p.a; g.save(); g.translate(p.x, p.y); g.rotate(p.rot);
+          g.fillStyle = p.c; g.beginPath(); g.ellipse(p.d, 0, p.rx, p.ry, 0, 0, TAU); g.fill(); g.restore(); g.globalAlpha = 1;
+        }
+      }
+    }
+    function paintOp(op, g = actx) {
+      if (op.t === 1) seg(g, op.x1, op.y1, op.x2, op.y2, op.w, op.c);
+      else if (op.t === 2) paintBloom(op.parts, g);
+      else if (op.t === 4) paintPoly(g, op.pts, op.c, op.o, op.w);
+      else paintDot(op, g);
+    }
+    function clearScreen(g) { g.save(); screenTransform(g); g.clearRect(0, 0, W, H); g.restore(); }
+    function expandB(s, x, y, r) {
+      if (x - r < s.bx0) s.bx0 = x - r; if (x + r > s.bx1) s.bx1 = x + r;
+      if (y - r < s.by0) s.by0 = y - r; if (y + r > s.by1) s.by1 = y + r;
+    }
+    function measure(spec, op) {
+      if (op.t === 1)
+      {
+        spec.seg++;
+        expandB(spec, op.x1, op.y1, op.w * 0.5 + 1); expandB(spec, op.x2, op.y2, op.w * 0.5 + 1);
+        if ((spec.seg & 3) === 0 && spec.anchors.length < 400)
+        {
+          const dx = op.x2 - op.x1, dy = op.y2 - op.y1, l = Math.hypot(dx, dy) || 1;
+          spec.anchors.push({ x: op.x2, y: op.y2, dx: dx / l, dy: dy / l, w: op.w });
+        }
+        if (spec.grid)
+        {
+          spec.gseq++;
+          const k = Math.floor(op.x2 / 24) + ',' + Math.floor(op.y2 / 24);
+          let a = spec.grid.get(k);
+          if (!a) { a = []; spec.grid.set(k, a); }
+          a.push({ x: op.x2, y: op.y2, n: spec.gseq });
+        }
+      } else if (op.t === 2)
+      {
+        for (const p of op.parts)
+        {
+          const r = (p.kind === 'petal' ? Math.abs(p.d) + Math.max(p.rx, p.ry) : p.r) + 2;
+          expandB(spec, p.x, p.y, r);
+        }
+      } else if (op.t === 4)
+      {
+        spec.seg++;
+        for (const p of op.pts) expandB(spec, p[ 0 ], p[ 1 ], 1.5);
+        if ((spec.seg & 7) === 0 && spec.anchors.length < 400)
+          spec.anchors.push({ x: op.pts[ 0 ][ 0 ], y: op.pts[ 0 ][ 1 ], dx: 0, dy: -1, w: 2.4 });
+      } else expandB(spec, op.x, op.y, op.r + 1);
+    }
+    function record(spec, op) {
+      if (!spec || spec.dead) return;
+      measure(spec, op);
+      op.q = ++recSeq;
+      spec.ops.push(op); totalOps++;
+    }
+    function gridFind(spec, x, y) {
+      const cx = Math.floor(x / 24), cy = Math.floor(y / 24);
+      for (let dx = -1; dx <= 1; dx++)for (let dy = -1; dy <= 1; dy++)
+      {
+        const a = spec.grid.get((cx + dx) + ',' + (cy + dy));
+        if (!a) continue;
+        for (let i = a.length - 1; i >= 0; i--)
+        {
+          const p = a[ i ], d = Math.hypot(p.x - x, p.y - y);
+          if (d > 7 && d < 15 && spec.gseq - p.n > 10) return p;
+        }
+      }
+      return null;
+    }
+    function findAnchor(x, y) {
+      for (let i = specimens.length - 1; i >= 0; i--)
+      {
+        const s = specimens[ i ];
+        if (x < s.bx0 - 16 || x > s.bx1 + 16 || y < s.by0 - 16 || y > s.by1 + 16) continue;
+        let best = null, bd = 18;
+        for (const a of s.anchors)
+        {
+          const d = Math.hypot(a.x - x, a.y - y);
+          if (d < bd) { bd = d; best = a; }
+        }
+        if (best) return { spec: s, pt: best };
+      }
+      return null;
+    }
+
+    /* ================= tips ================= */
+    function branchColor(d, rule, spec) {
+      if (spec && spec.rare) return spec.rare.color;
+      if (rule === 'coral') return pal.strokes[ 1 + d % 3 ];
+      if (rule === 'frost') return d < 2 ? pal.strokes[ 1 ] : pal.strokes[ 3 ];
+      return pal.strokes[ 1 ];
+    }
+    function curlFor(spec) { return (0.03 + params.curl * 0.075 + spec.curv * 0.04) * MODES[ spec.rule ].curlMul; }
+    function makeTip(x, y, angle, len, width, depth, o) {
+      const sn = o.spec ? MODES[ o.spec.rule ].snap : null;
+      if (sn) angle = Math.round(angle / sn) * sn;
+      return {
+        x, y, angle, len, remaining: len, width, depth, speed: o.speed, curl: o.curl,
+        hand: o.hand || (Math.random() < .5 ? -1 : 1), leaf: !!o.leaf, no: Math.random() * 100, col: o.col, spec: o.spec
+      };
+    }
+    function tipSteer(t, k, wob) {
+      const M = MODES[ t.spec.rule ];
+      t.angle += t.hand * t.curl * (0.35 + 1.5 * wob);
+      if (M.grav) t.angle += angTo(t.angle, Math.PI / 2) * M.grav * 0.035 * k;
+      if (M.buoy)
+      {
+        t.angle += angTo(t.angle, -Math.PI / 2) * M.buoy * 0.02 * k;
+        t.angle += Math.sin(T * 2.1 + t.no * 0.8) * 0.03 * k;
+      }
+      if (M.straight) t.angle += angTo(t.angle, -Math.PI / 2) * M.straight * 0.02 * k;
+      if (params.trop) t.angle += angTo(t.angle, params.trop > 0 ? -Math.PI / 2 : Math.PI / 2) * Math.abs(params.trop) * 0.02 * k;
+      if (params.wind) t.angle += params.wind * 0.0035 * k;
+      t.angle += (Math.random() - 0.5) * params.wild * 0.45;
+      if (M.snap) t.angle = Math.round(t.angle / M.snap) * M.snap;
+    }
+    function growTips(dt) {
+      const k = Math.min(dt, .05) * 60, tm = tempoMul(), cap = tipCap();
+      if (tips.length >= cap && !crowded) { crowded = true; toast('the thicket is dense — growth throttled'); }
+      if (tips.length < cap * 0.6) crowded = false;
+      for (let i = tips.length - 1; i >= 0; i--)
+      {
+        const t = tips[ i ], M = MODES[ t.spec.rule ];
+        let step = t.speed * tm * k * (0.3 + 0.7 * Math.min(1, t.remaining / 10));
+        if (t.coiling)
+        {
+          t.angle += t.coilDir * t.coilRate * k;
+          const sh = 0.5 + 0.5 * (t.remaining / t.coilLen);
+          step = Math.min(step, 1.9) * sh;
+        }
+        if (step > t.remaining) step = t.remaining;
+        if (t.crys)
+        {
+          if (params.trop) t.angle += angTo(t.angle, params.trop > 0 ? -Math.PI / 2 : Math.PI / 2) * Math.abs(params.trop) * 0.006 * k;
+          if (params.wind) t.angle += params.wind * 0.0008 * k;
+          t.angle += Math.sin(t.no * 7.3 + T * 0.8) * 0.0022 * k;
+          const dx = Math.cos(t.angle), dy = Math.sin(t.angle), qx = -dy, qy = dx;
+          const prog = 1 - t.remaining / t.len;
+          let hw = t.width * (1 - 0.45 * prog);
+          if (prog > 0.72) hw *= Math.pow(1 - (prog - 0.72) / 0.28, 0.85);
+          if (hw < 0.45) t.remaining = 0;
+          const nx = t.x + dx * step, ny = t.y + dy * step;
+          if (t.pl)
+          {
+            const nl = [ nx + qx * hw, ny + qy * hw ], nr = [ nx - qx * hw, ny - qy * hw ];
+            t.travel = (t.travel || 0) + step;
+            const fill = ((t.travel / 3.4) | 0) & 1 ? t.gemB : t.gemA;
+            const q = [ t.pl, t.pr, nr, nl ];
+            paintPoly(actx, q, fill);
+            record(t.spec, { t: 4, pts: q, c: fill });
+            t.pl = nl; t.pr = nr;
+          } else
+          {
+            t.pl = [ t.x + qx * t.width, t.y + qy * t.width ];
+            t.pr = [ t.x - qx * t.width, t.y - qy * t.width ];
+          }
+          t.x = nx; t.y = ny; t.remaining -= step;
+          if (t.remaining <= 0.01)
+          {
+            const axp = t.x + dx * (hw + 2.5), ayp = t.y + dy * (hw + 2.5);
+            const tri = [ t.pl, t.pr, [ axp, ayp ] ];
+            const tf = shade(t.gem0, 0.34), te = shade(t.gem0, -0.4);
+            paintPoly(actx, tri, tf, te, 0.8);
+            record(t.spec, { t: 4, pts: tri, c: tf, o: te, w: 0.8 });
+            if (Math.random() < 0.45)
+            {
+              const gl = { t: 3, x: axp, y: ayp, r: 0.8 + Math.random(), c: shade(t.gem0, 0.65), a: 1 };
+              paintDot(gl); record(t.spec, gl);
+              if (fxOn && !RM) fx.push({ x: axp, y: ayp, age: 0 });
+            }
+            tips.splice(i, 1); finalizeTip(t);
+          }
+          continue;
+        }
+        if (t.spec.grid && !t.coiling)
+        {
+          t.fus = (t.fus || 0) + step; t.fc = (t.fc || 0) + 1;
+          if (t.fus > 15 && t.fc % 2 === 0)
+          {
+            const hit = gridFind(t.spec, t.x, t.y);
+            if (hit)
+            {
+              const wF = Math.max(0.5, t.width * 0.6), cF = ink(t.col);
+              const mx = (t.x + hit.x) / 2 - (hit.y - t.y) * 0.18, my = (t.y + hit.y) / 2 + (hit.x - t.x) * 0.18;
+              let px = t.x, py = t.y;
+              for (let s2 = 1; s2 <= 3; s2++)
+              {
+                const u = s2 / 3;
+                const qx2 = (1 - u) * (1 - u) * t.x + 2 * (1 - u) * u * mx + u * u * hit.x;
+                const qy2 = (1 - u) * (1 - u) * t.y + 2 * (1 - u) * u * my + u * u * hit.y;
+                seg(actx, px, py, qx2, qy2, wF, cF);
+                record(t.spec, { t: 1, x1: px, y1: py, x2: qx2, y2: qy2, w: wF, c: cF });
+                px = qx2; py = qy2;
+              }
+              record(t.spec, { t: 3, x: hit.x, y: hit.y, r: 1.3, c: pal.strokes[ 2 ], a: 1 });
+              tips.splice(i, 1); branchCount++; continue;
+            }
+          }
+        }
+        if (!t.coiling)
+        {
+          const wob = vnoise(t.x * 0.0045 + t.no, t.y * 0.0045 + T * 0.015);
+          tipSteer(t, k, wob);
+        }
+        const nx = t.x + Math.cos(t.angle) * step, ny = t.y + Math.sin(t.angle) * step;
+        const prog = 1 - t.remaining / t.len;
+        const w = Math.max(0.4, t.width * (1 - (M.taper ?? 0.85) * Math.pow(Math.max(0, (prog - 0.6) / 0.4), 1.4)));
+        const sc = ink(t.col);
+        seg(actx, t.x, t.y, nx, ny, w, sc);
+        record(t.spec, { t: 1, x1: t.x, y1: t.y, x2: nx, y2: ny, w, c: sc });
+        if (M.nodes) nodeTick(t, nx, ny, w, step);
+        t.x = nx; t.y = ny; t.remaining -= step;
+        if (t.remaining <= 0.01) { tips.splice(i, 1); finalizeTip(t); }
+      }
+    }
+    function nodeTick(t, x, y, w, step) {
+      const M = MODES[ t.spec.rule ];
+      if (t.gap == null) t.gap = 22 + Math.random() * 16;
+      t.nodeD = (t.nodeD || 0) + step;
+      if (t.nodeD < t.gap) return;
+      t.nodeD = 0;
+      const pa = t.angle + Math.PI / 2, tl = Math.max(1.8, w * 2.2), tw = Math.max(1, w * 0.9), sc = ink(t.col);
+      seg(actx, x - Math.cos(pa) * tl, y - Math.sin(pa) * tl, x + Math.cos(pa) * tl, y + Math.sin(pa) * tl, tw, sc);
+      record(t.spec, { t: 1, x1: x - Math.cos(pa) * tl, y1: y - Math.sin(pa) * tl, x2: x + Math.cos(pa) * tl, y2: y + Math.sin(pa) * tl, w: tw, c: sc });
+      if (Math.random() < 0.3 && tips.length < tipCap() && t.spec.seg < t.spec.cap)
+      {
+        const na = t.angle + (Math.random() < .5 ? -1 : 1) * (0.7 + Math.random() * 0.5);
+        tips.push(makeTip(x, y, na, 12 + Math.random() * 14, 0.7, t.depth + 1,
+          { col: branchColor(2, t.spec.rule, t.spec), curl: curlFor(t.spec) * 1.2, spec: t.spec, speed: M.speed, leaf: true }));
+        branchCount++;
+      }
+    }
+    function finalizeTip(t) {
+      const spec = t.spec, M = MODES[ spec.rule ];
+      if (spec.rule === 'crystal')
+      {
+        if (!spec.dead && t.depth < spec.maxDepth && t.width > 2.2 && spec.seg < spec.cap && tips.length < tipCap()
+          && Math.random() < params.density * 0.7)
+        {
+          const n = 1 + (Math.random() < params.density * 0.5 ? 1 : 0);
+          for (let j = 0; j < n; j++)
+          {
+            const a = t.angle + (Math.random() < .5 ? -1 : 1) * (0.45 + Math.random() * 0.55);
+            const tp = makeTip(t.x, t.y, a, t.len * (0.32 + Math.random() * 0.22),
+              Math.max(1.1, t.width * 0.52), t.depth + 1, { col: t.col, spec, speed: t.speed });
+            tp.crys = true; tp.gem0 = t.gem0; tp.gemA = t.gemA; tp.gemB = t.gemB;
+            tips.push(tp);
+          }
+          branchCount += n; return;
+        }
+        if (Math.random() < params.flourish * 0.22) queueBloom(t);
+        return;
+      }
+      if (t.coiled) { queueBloom(t); return; }
+      if (t.leaf) { queueBloom(t); return; }
+      if (Math.random() < (0.01 + params.flourish * 0.16) * season().bloom) { queueBloom(t); return; }
+      if (M.coils && !t.coiled)
+      {
+        t.coiled = true; t.coiling = true;
+        t.coilDir = t.hand || (Math.random() < .5 ? -1 : 1);
+        t.coilRate = 0.16 + Math.random() * 0.09;
+        t.coilLen = t.remaining = 24 + Math.random() * 34;
+        return;
+      }
+      const canFork = !spec.dead && t.depth < spec.maxDepth && spec.seg < spec.cap && tips.length < tipCap();
+      if (canFork)
+      {
+        let n = M.forkMin;
+        if (Math.random() < params.density) n++;
+        if (M.extraFork && Math.random() < params.density * 0.7 && n < M.forkMax) n++;
+        n = Math.min(n, M.forkMax);
+        const hs = Math.random() < .5 ? -1 : 1;
+        for (let j = 0; j < n; j++)
+        {
+          const sp = M.spread * (0.55 + Math.random() * 0.9);
+          const a = n === 1 ? t.angle + hs * sp * 0.6 : t.angle + (j === 0 ? sp : -sp * (0.65 + Math.random() * 0.7));
+          const len = Math.max(7, t.len * (0.5 + Math.random() * 0.45));
+          const w = Math.max(0.5, t.width * M.widthMul);
+          tips.push(makeTip(t.x, t.y, a, len, w, t.depth + 1,
+            { col: branchColor(t.depth + 1, spec.rule, spec), curl: curlFor(spec), spec, speed: M.speed }));
+          if (spec.rule === 'mycelium') record(spec, { t: 3, x: t.x, y: t.y, r: 1.5, c: pal.strokes[ 2 ], a: 1 });
+        }
+        branchCount += n;
+      } else queueBloom(t);
+    }
+
+    /* ================= rocks ================= */
+    function stampBoulder(spec, x, y, r, tiny) {
+      if (r < 0.7) r = 0.7;
+      const base = spec && spec.rare ? spec.rare.color : pal.strokes[ 1 ];
+      if (!tiny)
+      {
+        const sh = [ [ x - r * 0.95, y + r * 0.72 ], [ x + r * 0.95, y + r * 0.78 ], [ x + r * 0.55, y + r * 1.04 ], [ x - r * 0.55, y + r * 0.98 ] ];
+        const sf = shade(base, -0.42);
+        paintPoly(actx, sh, sf);
+        record(spec, { t: 4, pts: sh, c: sf });
+      }
+      const n = 6 + (Math.random() * 4 | 0), rot = Math.random() * TAU;
+      const pts = [];
+      for (let i = 0; i < n; i++)
+      {
+        const a = rot + i / n * TAU;
+        const rr = r * (0.7 + Math.random() * 0.55);
+        pts.push([ x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.85 ]);
+      }
+      const fill = shade(base, -0.05 - Math.random() * 0.2);
+      const edge = shade(base, -0.55);
+      paintPoly(actx, pts, fill, r > 2 ? edge : null, 1);
+      record(spec, { t: 4, pts, c: fill, o: r > 2 ? edge : null, w: 1 });
+      if (!tiny)
+      {
+        const lx = x - r * 0.22, ly = y - r * 0.28;
+        const hp = pts.map(p => [ lx + (p[ 0 ] - x) * 0.5, ly + (p[ 1 ] - y) * 0.5 ]);
+        const hf = shade(base, 0.22 + Math.random() * 0.1);
+        paintPoly(actx, hp, hf);
+        record(spec, { t: 4, pts: hp, c: hf });
+        if (Math.random() < 0.4)
+        {
+          const m = 1 + (Math.random() * 2 | 0);
+          for (let j = 0; j < m; j++)
+          {
+            const a = Math.random() * TAU, d = r * (0.3 + Math.random() * 0.5);
+            const dot = {
+              t: 3, x: x + Math.cos(a) * d, y: y + Math.sin(a) * d - r * 0.4, r: 0.8 + Math.random() * 1.1,
+              c: shade(base, 0.42), a: .9
+            };
+            paintDot(dot); record(spec, dot);
+          }
+        }
+        if (Math.random() < 0.75)
+        {
+          const nP = 1 + (Math.random() * 3 | 0);
+          for (let j = 0; j < nP; j++)
+          {
+            const a = Math.random() * TAU, d = r * 1.15 + Math.random() * r;
+            stampBoulder(spec, x + Math.cos(a) * d, y + Math.sin(a) * d * 0.6, r * (0.18 + Math.random() * 0.22), true);
+          }
+        }
+      }
+    }
+
+    /* ================= rare variants ================= */
+    const VARIANTS = [
+      { n: 'golden', c: '#B98A24' }, { n: 'moonlit', c: '#7C93B8' }, { n: 'ember', c: '#B05A32' },
+      { n: 'blush', c: '#C2788C' }, { n: 'verdant', c: '#5E8A5E' }, { n: 'storm', c: '#66788C' } ];
+    function rollRare(spec, rule) {
+      if (Math.random() >= 0.05) return;
+      const v = VARIANTS[ (Math.random() * VARIANTS.length) | 0 ];
+      spec.rare = { name: v.n, color: v.c };
+      const key = rule + ':' + v.n;
+      if (!game.cat[ key ])
+      {
+        game.cat[ key ] = 1;
+        toast('◆ a ' + v.n + ' ' + rule + ' takes root — added to your catalog');
+        checkAch(); saveGameSoon();
+      }
+    }
+
+    /* ================= blooms ================= */
+    function makeBloomParts(t) {
+      const spec = t.spec, rule = spec.rule, parts = [], fs = 0.7 + params.flourish * 0.7;
+      const acc = spec && spec.rare ? spec.rare.color : pal.strokes[ 3 ];
+      const leaf = spec && spec.rare ? spec.rare.color : pal.strokes[ 1 ];
+      if (rule === 'vine')
+      {
+        const r = (3 + Math.random() * 3.4 + t.width * 0.6) * fs, petals = 5 + (Math.random() * 4 | 0) + (fs > 1.15 ? 2 : 0), rot0 = Math.random() * TAU;
+        const pc = Math.random() < 0.3 + (spec ? spec.energy : 0.4) * 0.45 ? acc : pal.strokes[ 2 ];
+        for (let i = 0; i < petals; i++)parts.push({
+          kind: 'petal', x: t.x, y: t.y, rot: rot0 + i * TAU / petals,
+          d: r * 0.72, rx: r * 0.66, ry: r * 0.23, c: pc, a: .92
+        });
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: r * 0.3, c: pal.strokes[ 0 ], a: 1 });
+      } else if (rule === 'coral')
+      {
+        const n = 3 + (Math.random() * 4 | 0);
+        for (let i = 0; i < n; i++)
+        {
+          const a = Math.random() * TAU, d = Math.random() * 3.2 * fs;
+          parts.push({ kind: 'dot', x: t.x + Math.cos(a) * d, y: t.y + Math.sin(a) * d, r: (0.9 + Math.random() * 1.5) * fs, c: acc, a: .95 });
+        }
+      } else if (rule === 'willow')
+      {
+        const n = 4 + (Math.random() * 3 | 0), sway = (Math.random() - .5) * .7;
+        for (let i = 0; i < n; i++)parts.push({
+          kind: 'dot',
+          x: t.x + Math.sin(sway * i * 0.9) * 1.4, y: t.y + i * 2.1, r: Math.max(0.6, 1.5 - i * 0.13), c: acc, a: .95
+        });
+        parts.push({ kind: 'dot', x: t.x, y: t.y - 1.5, r: 0.9, c: pal.strokes[ 1 ], a: 1 });
+      } else if (rule === 'frost')
+      {
+        const R = (2.6 + Math.random() * 2.2) * fs, rot0 = Math.random() * TAU;
+        for (let i = 0; i < 6; i++)parts.push({
+          kind: 'petal', x: t.x, y: t.y, rot: rot0 + i * TAU / 6,
+          d: R * 0.62, rx: R * 0.6, ry: R * 0.09, c: acc, a: .9
+        });
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1, c: pal.strokes[ 1 ], a: 1 });
+      } else if (rule === 'bamboo')
+      {
+        const bl = (8 + Math.random() * 8) * fs, n = 2 + (Math.random() * 2 | 0);
+        for (let i = 0; i < n; i++)
+        {
+          const a = t.angle + (i - (n - 1) / 2) * 0.55 + (Math.random() - .5) * .25;
+          parts.push({ kind: 'petal', x: t.x, y: t.y, rot: a, d: bl * 0.5, rx: bl * 0.52, ry: bl * 0.12, c: leaf, a: .95 });
+        }
+      } else if (rule === 'kelp')
+      {
+        const bl = (10 + Math.random() * 11) * fs;
+        parts.push({ kind: 'petal', x: t.x, y: t.y, rot: t.angle, d: bl * 0.5, rx: bl * 0.5, ry: bl * 0.17, c: leaf, a: .95 });
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1.7 * fs, c: acc, a: 1 });
+      } else if (rule === 'tendril')
+      {
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1.1 * fs, c: acc, a: 1 });
+        if (Math.random() < 0.5) parts.push({
+          kind: 'dot', x: t.x + (Math.random() - .5) * 3, y: t.y + (Math.random() - .5) * 3,
+          r: 0.7 * fs, c: pal.strokes[ 2 ], a: .9
+        });
+      } else if (rule === 'plume')
+      {
+        const n = 2 + (Math.random() * 2 | 0);
+        for (let i = 0; i < n; i++)
+        {
+          const a = Math.random() * TAU, d = Math.random() * 1.8;
+          parts.push({ kind: 'dot', x: t.x + Math.cos(a) * d, y: t.y + Math.sin(a) * d, r: (0.7 + Math.random() * 0.7) * fs, c: acc, a: .85 });
+        }
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1 * fs, c: pal.strokes[ 1 ], a: 1 });
+      } else if (rule === 'fungus')
+      {
+        const r = (6 + Math.random() * 5) * fs, n = 4 + (Math.random() * 3 | 0);
+        for (let i = 0; i < n; i++)
+        {
+          const a = Math.PI * 1.05 + (i / (n - 1)) * Math.PI * 0.9;
+          parts.push({ kind: 'petal', x: t.x, y: t.y, rot: a, d: r * 0.55, rx: r * 0.5, ry: r * 0.3, c: pal.strokes[ 2 ], a: .95 });
+        }
+        for (let i = 0; i < 3; i++)parts.push({ kind: 'dot', x: t.x + (i - 1) * r * 0.35, y: t.y + 2, r: 0.8 * fs, c: acc, a: .9 });
+        parts.push({ kind: 'dot', x: t.x, y: t.y - 1, r: 1.4 * fs, c: pal.strokes[ 1 ], a: 1 });
+      } else if (rule === 'vein')
+      {
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1.2 * fs, c: pal.strokes[ 2 ], a: 1 });
+      } else if (rule === 'crystal')
+      {
+        const n = 3 + (Math.random() * 3 | 0);
+        for (let i = 0; i < n; i++)
+        {
+          const a = Math.random() * TAU, d = Math.random() * 2.6;
+          parts.push({
+            kind: 'dot', x: t.x + Math.cos(a) * d, y: t.y + Math.sin(a) * d,
+            r: (0.6 + Math.random() * 0.9) * fs, c: shade(pal.strokes[ 3 ], 0.55), a: .95
+          });
+        }
+      } else if (rule === 'rock')
+      {
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1.2 * fs, c: shade(pal.strokes[ 1 ], 0.35), a: .9 });
+      } else
+      {
+        const n = 4 + (Math.random() * 4 | 0), rr = (2.6 + Math.random() * 2.4) * fs, rot0 = Math.random() * TAU;
+        for (let i = 0; i < n; i++)
+        {
+          const a = rot0 + i * TAU / n;
+          parts.push({ kind: 'dot', x: t.x + Math.cos(a) * rr, y: t.y + Math.sin(a) * rr, r: (0.8 + Math.random() * .9) * fs, c: acc, a: .9 });
+        }
+        parts.push({ kind: 'dot', x: t.x, y: t.y, r: 1.1 * fs, c: pal.strokes[ 2 ], a: 1 });
+      }
+      return parts;
+    }
+    function queueBloom(t) { bloomQueue.push({ spec: t.spec, parts: makeBloomParts(t), at: T + (0.12 + Math.random() * 0.45) / tempoMul() }); }
+    function processBlooms() {
+      for (let i = bloomQueue.length - 1; i >= 0; i--)
+      {
+        const b = bloomQueue[ i ];
+        if (b.spec.dead) { bloomQueue.splice(i, 1); continue; }
+        if (T >= b.at)
+        {
+          paintBloom(b.parts);
+          record(b.spec, { t: 2, parts: b.parts });
+          if (fxOn && !RM) fx.push({ x: b.parts[ 0 ].x, y: b.parts[ 0 ].y, age: 0 });
+          bloomQueue.splice(i, 1);
+          if (soundOn) chime(b.spec);
+          game.bloomsLife++;
+          gameEvent('bloom', { rule: b.spec.rule });
+          if (!game.sandbox && Math.random() < bloomDropCh())
+          {
+            const gain = rushT > 0 ? 2 : 1;
+            game.ess += gain; pulseEss(); saveGameSoon();
+            if (!RM) motes.push({ x: b.parts[ 0 ].x, y: b.parts[ 0 ].y, t: 0 });
+          }
+          if (!RM && aphids.length === 0)
+          {
+            const nk = dayPhase();
+            if (nk === 'dusk' || nk === 'night')
+            {
+              if (flies.length < 6 && Math.random() < 0.10)
+                flies.push({
+                  type: 'fire', x: b.parts[ 0 ].x, y: b.parts[ 0 ].y, dir: Math.random() * TAU,
+                  ph: Math.random() * TAU, life: 60 + Math.random() * 30
+                });
+            } else
+            {
+              const flyCh = (0.05 + game.upgrades.bell * 0.08) * (rushT > 0 ? 2 : 1);
+              if (flies.length < 6 + game.upgrades.bell * 3 && Math.random() < flyCh)
+                flies.push({
+                  type: 'fly', x: b.parts[ 0 ].x, y: b.parts[ 0 ].y, dir: Math.random() * TAU,
+                  ph: Math.random() * TAU, life: 40 + Math.random() * 20
+                });
+            }
+          }
+          if ((game.bloomsLife & 7) === 0) checkAch();
+        }
+      }
+    }
+
+    /* ================= spine reveal ================= */
+    function spawnSide(s, pt, prev, crown) {
+      const spec = s.spec, R = spec.rule, M = MODES[ R ];
+      if (spec.dead || spec.seg >= spec.cap || tips.length >= tipCap()) return;
+      let tangent = Math.atan2(pt.y - prev.y, pt.x - prev.x);
+      if (crown && s.spine.length > 1 && (R === 'plume' || R === 'fungus' || R === 'crystal'))
+      {
+        const pr = s.spine[ s.spine.length - 2 ];
+        tangent = Math.atan2(pt.y - pr.y, pt.x - pr.x);
+      }
+      const t01 = s.reveal / (s.spine.length - 1);
+      if (R === 'crystal')
+      {
+        const fan = crown ? 3 + (Math.random() * 2 | 0) : 1 + (Math.random() * 2 | 0);
+        const baseLen = (18 + params.reach * 55) * (crown ? 1.2 : 1);
+        const gem0 = spec.rare ? spec.rare.color : pal.strokes[ 3 ];
+        for (let j = 0; j < fan; j++)
+        {
+          if (tips.length >= tipCap()) break;
+          let ang;
+          if (crown) ang = tangent + (j - (fan - 1) / 2) * 0.5 + (Math.random() - .5) * 0.15;
+          else
+          {
+            const side = Math.random() < .5 ? -1 : 1;
+            ang = tangent + side * (0.5 + Math.random() * 0.75);
+            if (j === 1) ang = tangent - side * (0.5 + Math.random() * 0.75);
+          }
+          const lf = crown ? 1 - Math.abs(j - (fan - 1) / 2) / (fan / 2) * 0.45 : (0.5 + Math.random() * 0.5);
+          const tp = makeTip(pt.x, pt.y, ang, baseLen * lf * (0.75 + Math.random() * 0.5),
+            Math.max(1.6, (2.4 + params.reach * 4.5) * lf), 1, { col: gem0, spec, speed: M.speed });
+          tp.crys = true; tp.gem0 = gem0;
+          tp.gemA = shade(tp.gem0, -0.1 - Math.random() * 0.12);
+          tp.gemB = shade(tp.gem0, 0.1 + Math.random() * 0.12);
+          tips.push(tp); branchCount++;
+        }
+        return;
+      }
+      if (R === 'rock')
+      {
+        const prof = crown ? 0.85 : 0.45 + Math.sin(t01 * Math.PI) * 0.75;
+        const rr = (4 + params.reach * 13) * prof * (0.65 + Math.random() * 0.7) * (crown ? 1.25 : 1);
+        stampBoulder(spec, pt.x + (Math.random() - .5) * 4, pt.y + (Math.random() - .5) * 4, rr);
+        branchCount++;
+        if (crown && Math.random() < 0.7)
+          stampBoulder(spec, pt.x + (Math.random() - .5) * 14, pt.y + 6, rr * 0.45, true);
+        return;
+      }
+      if (R === 'plume')
+      {
+        const fl = (10 + params.reach * 50) * (0.3 + Math.sin(t01 * Math.PI) * 0.9);
+        const rows = crown ? [ -1, 0, 1 ] : [ -1, 1 ];
+        for (const sgn of rows)
+        {
+          if (tips.length >= tipCap()) break;
+          const ang = tangent + (sgn === 0 ? 0 : sgn * (0.5 + Math.random() * 0.3));
+          tips.push(makeTip(pt.x, pt.y, ang + (sgn === 0 ? (Math.random() - .5) * .2 : 0),
+            fl * (sgn === 0 ? 0.85 : 1), Math.max(0.55, pt.w * 0.45), 1,
+            {
+              col: branchColor(1, R, spec), curl: curlFor(spec) * 1.4, spec, speed: M.speed,
+              hand: sgn === 0 ? 1 : sgn, leaf: true
+            }));
+          branchCount++;
+        }
+        return;
+      }
+      if (R === 'fungus')
+      {
+        const up = -Math.PI / 2 + (Math.random() - .5) * (crown ? 0.5 : 0.8);
+        const sl = crown ? (14 + params.reach * 44) : (8 + params.reach * 30 + Math.random() * 12);
+        tips.push(makeTip(pt.x, pt.y, up, sl,
+          crown ? Math.max(1.4, pt.w * 0.85) : Math.max(0.8, pt.w * 0.7), 1,
+          { col: branchColor(1, R, spec), curl: 0.02, spec, speed: M.speed, leaf: true }));
+        branchCount++;
+        return;
+      }
+      if (R === 'fern' && !crown)
+      {
+        s.alt = -s.alt;
+        const ang = tangent + s.alt * (0.95 + Math.random() * 0.25);
+        const len = Math.max(6, (10 + params.reach * 46) * (0.35 + Math.sin(t01 * Math.PI) * 0.85));
+        tips.push(makeTip(pt.x, pt.y, ang, len, Math.max(0.6, pt.w * 0.5), 1,
+          { col: branchColor(1, R, spec), curl: curlFor(spec) * 1.5, spec, speed: M.speed, leaf: true }));
+        branchCount++; return;
+      }
+      if (R === 'kelp' && !crown)
+      {
+        s.alt = -s.alt;
+        const ang = tangent + s.alt * (0.55 + Math.random() * 0.5);
+        const len = Math.max(8, (14 + params.reach * 44) * (0.45 + Math.sin(t01 * Math.PI) * 0.75));
+        tips.push(makeTip(pt.x, pt.y, ang, len, Math.max(0.6, pt.w * 0.45), 1,
+          { col: branchColor(1, R, spec), curl: curlFor(spec) * 0.8, spec, speed: M.speed, leaf: true }));
+        branchCount++; return;
+      }
+      if (R === 'bamboo' && !crown)
+      {
+        if (Math.random() < 0.55)
+        {
+          const base = tangent + s.alt * (0.5 + Math.random() * 0.5); s.alt = -s.alt;
+          const nL = 1 + (Math.random() * 2 | 0);
+          for (let j = 0; j < nL; j++)
+          {
+            const ang = base + (j - (nL - 1) / 2) * 0.5 + (Math.random() - .5) * .2;
+            tips.push(makeTip(pt.x, pt.y, ang, 10 + Math.random() * 16, 0.65, 1,
+              { col: branchColor(1, R, spec), curl: curlFor(spec), spec, speed: M.speed, leaf: true }));
+            branchCount++;
+          }
+          return;
+        }
+      }
+      const hand = Math.random() < .5 ? -1 : 1;
+      const spread = M.spread * (0.5 + Math.random() * 0.9);
+      const ang = tangent + (crown ? (Math.random() < .5 ? -1 : 1) * spread * 0.5 : hand * spread);
+      const taper = 1 - 0.55 * t01;
+      const len = Math.max(9, (16 + params.reach * 70) * M.lenMul * taper * (0.6 + Math.random() * 0.8)) * (crown ? 1.1 : 1);
+      const width = Math.max(0.7, pt.w * 0.62);
+      tips.push(makeTip(pt.x, pt.y, ang, len, width, 1,
+        { col: branchColor(1, R, spec), curl: curlFor(spec), spec, speed: M.speed, hand }));
+      branchCount++;
+    }
+    function growSpines(dt) {
+      const k = Math.min(dt, .05) * 60, tm = tempoMul();
+      for (let i = spines.length - 1; i >= 0; i--)
+      {
+        const s = spines[ i ], pts = s.spine;
+        if (s.spec.dead) { spines.splice(i, 1); continue; }
+        const end = Math.min(pts.length - 1, s.reveal + Math.max(1, Math.round(2.2 * k * tm)));
+        while (s.reveal < end)
+        {
+          const a = pts[ s.reveal ], b = pts[ s.reveal + 1 ];
+          const seamW = s.spec.rule === 'crystal' ? b.w * 0.5 : b.w;
+          const sc = ink(s.spec.rare ? s.spec.rare.color : pal.strokes[ 0 ]);
+          seg(actx, a.x, a.y, b.x, b.y, seamW, sc);
+          record(s.spec, { t: 1, x1: a.x, y1: a.y, x2: b.x, y2: b.y, w: seamW, c: sc });
+          s.acc++;
+          if (s.acc >= s.bp && s.reveal > 2 && s.reveal < pts.length - 3) { s.acc = 0; spawnSide(s, b, a, false); }
+          s.reveal++;
+        }
+        if (s.reveal >= pts.length - 1)
+        {
+          const p = pts[ pts.length - 1 ], q = pts[ pts.length - 2 ] || p;
+          spawnSide(s, p, { x: p.x - (p.y - q.y), y: p.y + (p.x - q.x) }, true);
+          spines.splice(i, 1);
+        }
+      }
+    }
+
+    /* ================= symmetry ================= */
+    function symList() {
+      const cx = worldW / 2, cy = worldH / 2;
+      const rot = a => p => {
+        const dx = p.x - cx, dy = p.y - cy, c = Math.cos(a), s = Math.sin(a);
+        return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c };
+      };
+      switch (params.sym)
+      {
+        case 'mirror': return [ p => p, p => ({ x: 2 * cx - p.x, y: p.y }) ];
+        case 'rad4': return [ 0, 1, 2, 3 ].map(k => rot(k * Math.PI / 2));
+        case 'rad6': return [ 0, 1, 2, 3, 4, 5 ].map(k => rot(k * Math.PI / 3));
+        default: return [ p => p ];
+      }
+    }
+
+    /* ================= gesture capture ================= */
+    let stroke = null, stir = [], drew = false, lastInteract = -99, lastDrift = 2;
+    let strokeCv = null, sctx = null, strokeDrawn = 0;
+    const pointer = {
+      x: 0, y: 0, inside: false, down: false, speedSm: 0, energy: 0,
+      coarse: matchMedia('(pointer:coarse)').matches
+    };
+    const pos = e => ({ x: e.clientX - stageRect.left, y: e.clientY - stageRect.top });
+    const actPts = new Map();
+    let pinch = null, panDrag = null, panHold = false;
+
+    function addPoint(p, t, pr) {
+      const pts = stroke.pts, last = pts[ pts.length - 1 ];
+      const d = Math.hypot(p.x - last.x, p.y - last.y);
+      if (d < 0.7 && pts.length > 1) return;
+      const vInst = d / Math.max(4, t - last.t);
+      const v = last.v * 0.6 + vInst * 0.4;
+      pts.push({ x: p.x, y: p.y, t, v, pr: pr ?? 0.5 });
+      pointer.speedSm = pointer.speedSm * 0.7 + v * 0.3;
+      pointer.energy = clamp(pointer.energy + v * 0.02, 0, 1);
+      stir.push({ x: p.x, y: p.y, t: T }); if (stir.length > 50) stir.shift();
+    }
+    function beginStrokeBuffer() {
+      strokeCv = document.createElement('canvas');
+      strokeCv.width = Math.max(1, Math.round(worldW * DPR));
+      strokeCv.height = Math.max(1, Math.round(worldH * DPR));
+      sctx = strokeCv.getContext('2d');
+      sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      sctx.lineCap = 'round'; sctx.lineJoin = 'round';
+      strokeDrawn = 0;
+    }
+    function drawStrokeTail() {
+      if (!strokeCv) return;
+      const pts = stroke.pts;
+      if (pts.length < 2) return;
+      stroke.sym.forEach((f, fi) => {
+        sctx.globalAlpha = fi ? 0.5 : 1;
+        for (let i = Math.max(1, strokeDrawn); i < pts.length; i++)
+        {
+          const a = f(pts[ i - 1 ]), b = f(pts[ i ]);
+          seg(sctx, a.x, a.y, b.x, b.y, widthAt(pts[ i ]), pal.ink);
+        }
+      });
+      sctx.globalAlpha = 1;
+      strokeDrawn = pts.length;
+    }
+    function startPinch() {
+      const [ a, b ] = [ ...actPts.values() ].slice(0, 2);
+      pinch = { d: Math.max(8, Math.hypot(a.x - b.x, a.y - b.y)), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+    }
+    function cancelTransient() {
+      if (stroke) { stroke = null; strokeCv = null; sctx = null; toast('pinch — stroke cancelled'); }
+      if (eraseSess) { eraseSess = false; eraseSet = null; redrawAll(); eraseDirty = false; }
+      if (graftDrag) graftDrag = null;
+    }
+    stage.addEventListener('pointerdown', e => {
+      lastInteract = T;
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      stage.setPointerCapture(e.pointerId);
+      const sp = pos(e);
+      actPts.set(e.pointerId, { x: sp.x, y: sp.y });
+      if (actPts.size === 2) { cancelTransient(); startPinch(); return; }
+      if (pinch) return;
+      if (panHold || e.button === 1)
+      {
+        panDrag = { sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y };
+        return;
+      }
+      if (replay) { toast('replaying — one moment'); return; }
+      const p = toWorld(sp);
+      pointer.x = sp.x; pointer.y = sp.y; pointer.down = true; pointer.inside = true; pointer.energy = 0;
+      /* squash aphids first, then catch guests */
+      if (aphids.length)
+      {
+        let bi = -1, bd = 16;
+        for (let i = 0; i < aphids.length; i++)
+        {
+          const d = Math.hypot(aphids[ i ].x - p.x, aphids[ i ].y - p.y);
+          if (d < bd) { bd = d; bi = i; }
+        }
+        if (bi >= 0)
+        {
+          const a = aphids.splice(bi, 1)[ 0 ];
+          game.squash++; checkAch();
+          gameEvent('pest');
+          if (Math.random() < 0.35)
+          {
+            game.ess++; pulseEss(); saveGameSoon();
+            motes.push({ x: a.x, y: a.y, t: 0 }); toast('aphid squashed — +1 essence');
+          }
+          else toast('aphid squashed');
+          pointer.down = false; return;
+        }
+      }
+      if (flies.length)
+      {
+        let bi = -1, bd = 26;
+        for (let i = 0; i < flies.length; i++)
+        {
+          const d = Math.hypot(flies[ i ].x - p.x, flies[ i ].y - p.y);
+          if (d < bd) { bd = d; bi = i; }
+        }
+        if (bi >= 0)
+        {
+          const f = flies.splice(bi, 1)[ 0 ];
+          const isFire = f.type === 'fire';
+          const base = isFire ? 2 : 1;
+          let gain = base;
+          if (rushT > 0) gain += base;
+          if (game.upgrades.bell > 1) gain += 1;
+          game.ess += gain; game.caught++; pulseEss(); saveGameSoon();
+          motes.push({ x: f.x, y: f.y, t: 0 });
+          if (isFire) { game.glow++; checkAch(); gameEvent('firefly'); }
+          else { checkAch(); gameEvent('patron'); }
+          toast((isFire ? 'firefly' : 'patron') + ' caught — +' + gain + ' essence');
+          pointer.down = false; return;
+        }
+      }
+      if (eraseOn) { eraseSess = true; eraseSet = new Set(); eraseLast = p; eraseAt(p.x, p.y); return; }
+      if (graftOn) { graftBegin(p); return; }
+      if (stroke) return;
+      stroke = { id: e.pointerId, sym: symList(), pts: [ { x: p.x, y: p.y, t: e.timeStamp || performance.now(), v: 0.2, pr: 0.5 } ] };
+      beginStrokeBuffer();
+      if (!drew) { drew = true; $('hint').style.opacity = 0; }
+    });
+    stage.addEventListener('pointermove', e => {
+      lastInteract = T;
+      const sp = pos(e);
+      pointer.x = sp.x; pointer.y = sp.y; pointer.inside = true;
+      if (actPts.has(e.pointerId)) actPts.set(e.pointerId, { x: sp.x, y: sp.y });
+      if (pinch && actPts.size >= 2)
+      {
+        const [ a, b ] = [ ...actPts.values() ].slice(0, 2);
+        const d = Math.max(8, Math.hypot(a.x - b.x, a.y - b.y));
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        zoomAt(mx, my, d / pinch.d);
+        view.x -= (mx - pinch.mx) / view.s;
+        view.y -= (my - pinch.my) / view.s;
+        clampView(); applyView();
+        pinch.d = d; pinch.mx = mx; pinch.my = my;
+        return;
+      }
+      if (panDrag)
+      {
+        view.x = panDrag.vx - (e.clientX - panDrag.sx) / view.s;
+        view.y = panDrag.vy - (e.clientY - panDrag.sy) / view.s;
+        clampView(); applyView();
+        return;
+      }
+      if (eraseSess)
+      {
+        const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [ e ];
+        for (const ev of evs) { const q = toWorld(pos(ev)); eraseLine(eraseLast, q); eraseLast = q; }
+        return;
+      }
+      if (graftDrag)
+      {
+        const p = toWorld(sp);
+        const lp = graftDrag.pts[ graftDrag.pts.length - 1 ];
+        if (Math.hypot(p.x - lp.x, p.y - lp.y) > 3) graftDrag.pts.push(p);
+        return;
+      }
+      if (stroke && e.pointerId === stroke.id)
+      {
+        const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [ e ];
+        for (const ev of evs)
+        {
+          const pr = (ev.pointerType === 'pen' && ev.pressure > 0) ? ev.pressure : 0.5;
+          addPoint(toWorld(pos(ev)), ev.timeStamp || performance.now(), pr);
+        }
+      }
+    });
+    const endPointer = e => {
+      actPts.delete(e.pointerId);
+      if (pinch && actPts.size < 2) pinch = null;
+      if (panDrag) panDrag = null;
+      if (eraseSess)
+      {
+        eraseSess = false;
+        if (eraseSet && eraseSet.size)
+        {
+          pushAction({ type: 'erase', list: [ ...eraseSet ] });
+          toast('erased ' + eraseSet.size + ' growth' + (eraseSet.size > 1 ? 's' : ''));
+          gameEvent('erase', { n: eraseSet.size });
+        }
+        eraseSet = null; redrawAll(); eraseDirty = false;
+      }
+      if (graftDrag) graftEnd();
+      if (stroke && e.pointerId === stroke.id) finishStroke();
+      pointer.down = false;
+    };
+    stage.addEventListener('pointerup', endPointer);
+    stage.addEventListener('pointercancel', endPointer);
+    stage.addEventListener('pointerleave', () => { if (!pointer.down) pointer.inside = false; });
+    stage.addEventListener('contextmenu', e => e.preventDefault());
+    stage.addEventListener('wheel', e => {
+      e.preventDefault();
+      const sp = pos(e);
+      const f = Math.exp(-(e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY) * 0.0014);
+      zoomAt(sp.x, sp.y, f);
+    }, { passive: false });
+    stage.addEventListener('dragover', e => e.preventDefault());
+    stage.addEventListener('drop', e => {
+      e.preventDefault();
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[ 0 ];
+      if (f) openProjectFile(f);
+    });
+
+    /* eraser */
+    function eraseAt(x, y) {
+      for (let i = specimens.length - 1; i >= 0; i--)
+      {
+        const s = specimens[ i ];
+        if (x < s.bx0 - 12 || x > s.bx1 + 12 || y < s.by0 - 12 || y > s.by1 + 12) continue;
+        if (eraseSet) eraseSet.add(s);
+        killSpecimens([ s ]);
+      }
+    }
+    function eraseLine(a, b) {
+      const d = Math.hypot(b.x - a.x, b.y - a.y), steps = Math.max(1, Math.ceil(d / 9));
+      for (let i = 1; i <= steps; i++)eraseAt(lerp(a.x, b.x, i / steps), lerp(a.y, b.y, i / steps));
+    }
+
+    /* grafting */
+    function graftBegin(p) {
+      const a = findAnchor(p.x, p.y);
+      if (!a) { toast('no stem here — graft near existing growth'); return; }
+      graftDrag = { spec: a.spec, pt: a.pt, pts: [ { x: p.x, y: p.y } ] };
+    }
+    function graftEnd() {
+      const g = graftDrag; graftDrag = null;
+      const last = g.pts[ g.pts.length - 1 ];
+      const dist = Math.hypot(last.x - g.pt.x, last.y - g.pt.y);
+      let ang;
+      if (dist < 8) ang = Math.atan2(g.pt.dy, g.pt.dx) + (Math.random() - .5) * 1.2;
+      else ang = Math.atan2(last.y - g.pt.y, last.x - g.pt.x);
+      const rs = [ { x: g.pt.x, y: g.pt.y, w: clamp(g.pt.w * 0.9, 1, 3.4) } ];
+      const n = 9 + (Math.random() * 5 | 0);
+      for (let i = 1; i <= n; i++)
+      {
+        ang += (Math.random() - .5) * 0.3;
+        const p0 = rs[ i - 1 ];
+        rs.push({
+          x: p0.x + Math.cos(ang) * 5.2, y: p0.y + Math.sin(ang) * 5.2,
+          w: Math.max(0.8, rs[ 0 ].w * (1 - i / n * 0.4))
+        });
+      }
+      commitGesture(null, { speedN: .5, curvN: .4, len: n * 5.2, rs }, null);
+      game.grafts++; checkAch();
+      gameEvent('graft');
+      if (soundOn) thump();
+    }
+
+    function resample(pts, spacing) {
+      const out = [ { x: pts[ 0 ].x, y: pts[ 0 ].y, w: widthAt(pts[ 0 ]) } ];
+      let acc = 0, prev = pts[ 0 ];
+      for (let i = 1; i < pts.length; i++)
+      {
+        let cur = pts[ i ], d = Math.hypot(cur.x - prev.x, cur.y - prev.y);
+        while (acc + d >= spacing)
+        {
+          const t = (spacing - acc) / d;
+          const nx = prev.x + (cur.x - prev.x) * t, ny = prev.y + (cur.y - prev.y) * t;
+          const vv = lerp(prev.v, cur.v, t);
+          const prr = lerp(prev.pr ?? 0.5, cur.pr ?? 0.5, t);
+          out.push({ x: nx, y: ny, w: widthAt({ v: vv, pr: prr }) });
+          prev = { x: nx, y: ny, t: 0, v: vv, pr: prr };
+          d = Math.hypot(cur.x - prev.x, cur.y - prev.y); acc = 0;
+        }
+        acc += d; prev = cur;
+      }
+      const lp = pts[ pts.length - 1 ], lo = out[ out.length - 1 ];
+      if (Math.hypot(lp.x - lo.x, lp.y - lo.y) > 2) out.push({ x: lp.x, y: lp.y, w: widthAt(lp) });
+      return out;
+    }
+    function analyze(raw) {
+      let len = 0;
+      for (let i = 1; i < raw.length; i++)len += Math.hypot(raw[ i ].x - raw[ i - 1 ].x, raw[ i ].y - raw[ i - 1 ].y);
+      const rs = resample(raw, 5);
+      let turn = 0;
+      for (let i = 2; i < rs.length; i++)
+      {
+        const a1 = Math.atan2(rs[ i - 1 ].y - rs[ i - 2 ].y, rs[ i - 1 ].x - rs[ i - 2 ].x);
+        const a2 = Math.atan2(rs[ i ].y - rs[ i - 1 ].y, rs[ i ].x - rs[ i - 1 ].x);
+        let d = Math.abs(a2 - a1); if (d > Math.PI) d = TAU - d; turn += d;
+      }
+      const dur = Math.max(16, raw[ raw.length - 1 ].t - raw[ 0 ].t);
+      const vAvg = len / dur;
+      return {
+        len, vAvg, speedN: clamp((vAvg - 0.12) / 1.4, 0, 1),
+        curvN: clamp((turn / Math.max(len, 1)) / 0.055, 0, 1), rs
+      };
+    }
+    function makeSpecimen(rs, A, gid, symN, rule) {
+      const M = MODES[ rule ];
+      const spec = {
+        ops: [], anchors: [], seg: 0, cap: Math.max(500, Math.round(M.cap / Math.sqrt(symN))), dead: false,
+        curv: A.curvN, group: gid, rule,
+        maxDepth: clamp(3 + Math.round(A.speedN * 1.5 + A.curvN * 1.5) + M.depthBonus, 2, 7),
+        energy: 0.5 * A.speedN + 0.35 * A.curvN + 0.15 * clamp((A.len || 0) / 900, 0, 1),
+        grid: rule === 'vein' ? new Map() : null, gseq: 0,
+        bx0: 1e9, by0: 1e9, bx1: -1e9, by1: -1e9
+      };
+      rollRare(spec, rule);
+      specimens.push(spec);
+      spines.push({
+        spec, spine: rs, reveal: 0, acc: 0, alt: 1,
+        bp: Math.max(2, Math.round(M.bpBase - params.density * 5))
+      });
+      return spec;
+    }
+    function commitGesture(raw, ov, syms) {
+      syms = syms || symList();
+      let A = ov;
+      if (!A || !A.rs)
+      {
+        if (!raw || raw.length < 2) return;
+        A = analyze(raw);
+      }
+      let rule = params.meadow ? pickRule() : params.mode;
+      if (!ruleAvailable(rule)) rule = 'vine';
+      const gid = ++groupSeq, list = [];
+      for (const f of syms)
+      {
+        const rs = A.rs.map(p => { const q = f(p); return { x: q.x, y: q.y, w: p.w }; });
+        list.push(makeSpecimen(rs, A, gid, syms.length, rule));
+      }
+      pushAction({ type: 'draw', list });
+      lastEnergy = list[ 0 ].energy;
+      gameEvent('specimen', { rule, sym: params.sym });
+      if (raw) gameEvent('gesture', { energy: lastEnergy });
+      checkAch();
+      updateReadout();
+    }
+    function finishStroke() {
+      const pts = stroke.pts, sym = stroke.sym;
+      stroke = null; strokeCv = null; sctx = null;
+      let len = 0;
+      for (let i = 1; i < pts.length; i++)len += Math.hypot(pts[ i ].x - pts[ i - 1 ].x, pts[ i ].y - pts[ i - 1 ].y);
+      if (len < 12) plantSeedling(pts[ 0 ].x, pts[ 0 ].y);
+      else commitGesture(pts, null, sym);
+      const lp = pts[ pts.length - 1 ]; pulse(lp.x, lp.y);
+      if (soundOn) thump();
+    }
+    function plantSeedling(x, y) {
+      const pts = []; let a = -Math.PI / 2 + (Math.random() - 0.5) * 0.6, px = x, py = y;
+      const n = (params.mode === 'rock') ? 12 + (Math.random() * 6 | 0) : 8 + (Math.random() * 6 | 0);
+      for (let i = 0; i < n; i++)
+      {
+        pts.push({ x: px, y: py, t: i * 14, v: 0.35, pr: 0.5 });
+        a += (Math.random() - 0.5) * 0.28; px += Math.cos(a) * 6; py += Math.sin(a) * 6;
+      }
+      commitGesture(pts, { len: 999, vAvg: .4, speedN: .45, curvN: .3, rs: resample(pts, 5) });
+    }
+    function scatter(n) {
+      if (replay) { toast('wait for the replay'); return; }
+      if (!game.sandbox && !game.upgrades.purse)
+      {
+        if (game.ess < 3) { toast('scattering costs 3 essence — commissions, blooms & guests pay it'); return; }
+        game.ess -= 3; pulseEss(); saveGameSoon();
+      }
+      for (let i = 0; i < n; i++)setTimeout(() => {
+        const x = worldW * 0.14 + Math.random() * worldW * 0.72, y = worldH * 0.16 + Math.random() * worldH * 0.68;
+        const pts = []; let a = Math.random() * TAU, px = x, py = y;
+        const steps = 22 + (Math.random() * 36 | 0), cs = (Math.random() < .5 ? -1 : 1) * (0.004 + Math.random() * 0.026);
+        for (let j = 0; j < steps; j++)
+        {
+          pts.push({ x: px, y: py, t: j * 8, v: 0.25 + Math.random() * 0.9, pr: 0.5 });
+          a += cs + (vnoise(px * 0.006, py * 0.006) - 0.5) * 0.22;
+          px += Math.cos(a) * 6; py += Math.sin(a) * 6;
+        }
+        commitGesture(pts, null);
+      }, i * 380);
+      toast('scattering seedlings');
+    }
+
+    /* ================= ambient particles ================= */
+    function initParticles() {
+      if (RM) return;
+      const n = clamp(Math.round(worldW * worldH / 9000), 60, 240);
+      particles = Array.from({ length: n }, () => ({ x: Math.random() * worldW, y: Math.random() * worldH, vx: 0, vy: 0 }));
+    }
+    function pulse(x, y) {
+      for (const p of particles)
+      {
+        const dx = p.x - x, dy = p.y - y, d = Math.hypot(dx, dy);
+        if (d < 170 && d > 0.1) { const f = (1 - d / 170) * 3.4; p.vx += dx / d * f; p.vy += dy / d * f; }
+      }
+    }
+    function updateParticles(dt) {
+      if (RM || !particles.length) return;
+      const k = Math.min(dt, .05) * 60;
+      stir = stir.filter(s => T - s.t < 0.9);
+      lctx.lineWidth = 1; lctx.strokeStyle = pal.particle; lctx.beginPath();
+      for (const p of particles)
+      {
+        const a = (vnoise(p.x * 0.0012 + T * 0.05, p.y * 0.0012 - T * 0.03) - 0.5) * TAU * 1.7;
+        p.vx = (p.vx + Math.cos(a) * 0.045 * k + params.wind * 0.05 * k) * 0.94;
+        p.vy = (p.vy + Math.sin(a) * 0.045 * k - 0.008 * k) * 0.94;
+        if (gust > 0)
+        {
+          p.vx += (0.3 + Math.random() * 0.25) * gust * k;
+          p.vy += (Math.random() - 0.5) * 0.16 * gust * k;
+        }
+        for (const s of stir)
+        {
+          const age = T - s.t; if (age > 0.9) continue;
+          const dx = p.x - s.x, dy = p.y - s.y, d2 = dx * dx + dy * dy;
+          if (d2 < 8100)
+          {
+            const d = Math.sqrt(d2) || 1, f = (1 - d / 90) * (1 - age / 0.9) * 0.5;
+            p.vx += (-dy / d) * f * k; p.vy += (dx / d) * f * k;
+          }
+        }
+        const ox = p.x, oy = p.y; p.x += p.vx * k * 2; p.y += p.vy * k * 2;
+        let wrapped = false;
+        if (p.x < -4) { p.x += worldW + 8; wrapped = true } else if (p.x > worldW + 4) { p.x -= worldW + 8; wrapped = true }
+        if (p.y < -4) { p.y += worldH + 8; wrapped = true } else if (p.y > worldH + 4) { p.y -= worldH + 8; wrapped = true }
+        if (!wrapped) { lctx.moveTo(ox, oy); lctx.lineTo(p.x, p.y); }
+        else lctx.moveTo(p.x, p.y);
+      }
+      lctx.stroke();
+    }
+
+    /* ================= guests (butterflies & fireflies) ================= */
+    function updateFlies(dt) {
+      for (let i = flies.length - 1; i >= 0; i--)
+      {
+        const f = flies[ i ];
+        f.ph += dt * (f.type === 'fire' ? 6 : 14);
+        f.life -= dt;
+        if (f.type === 'fire' && dayPhase() === 'day') f.life = Math.min(f.life, 1.5);
+        if (f.life <= 0) { flies.splice(i, 1); continue; }
+        const a = (vnoise(f.x * 0.004, f.y * 0.004 + T * 0.2) - 0.5) * 3;
+        f.dir += a * dt * 2.5;
+        const sp = f.type === 'fire' ? 18 : 28;
+        f.x += Math.cos(f.dir) * sp * dt; f.y += Math.sin(f.dir) * sp * dt;
+        if (f.x < 10) { f.x = 10; f.dir = Math.PI - f.dir; }
+        if (f.x > worldW - 10) { f.x = worldW - 10; f.dir = Math.PI - f.dir; }
+        if (f.y < 10) { f.y = 10; f.dir = -f.dir; }
+        if (f.y > worldH - 10) { f.y = worldH - 10; f.dir = -f.dir; }
+      }
+    }
+    function drawFlies() {
+      if (!flies.length) return;
+      for (const f of flies)
+      {
+        if (f.type === 'fire')
+        {
+          const pu = 0.6 + 0.4 * Math.sin(f.ph * 2);
+          lctx.globalAlpha = .16 * pu; lctx.fillStyle = pal.accent;
+          lctx.beginPath(); lctx.arc(f.x, f.y, 6, 0, TAU); lctx.fill();
+          lctx.globalAlpha = .95; lctx.fillStyle = pal.accent;
+          lctx.beginPath(); lctx.arc(f.x, f.y, 1.4 + pu * 0.9, 0, TAU); lctx.fill();
+          lctx.globalAlpha = 1;
+          continue;
+        }
+        const flap = Math.abs(Math.sin(f.ph));
+        const wx = Math.cos(f.dir), wy = Math.sin(f.dir);
+        const px = -wy, py = wx;
+        const wl = 4.5 * (0.4 + 0.6 * flap);
+        lctx.globalAlpha = .92; lctx.fillStyle = pal.strokes[ 3 ];
+        lctx.beginPath();
+        lctx.moveTo(f.x, f.y);
+        lctx.lineTo(f.x + px * wl - wx * 2.6, f.y + py * wl - wy * 2.6);
+        lctx.lineTo(f.x + px * wl * 0.35 + wx * 1.6, f.y + py * wl * 0.35 + wy * 1.6);
+        lctx.closePath(); lctx.fill();
+        lctx.beginPath();
+        lctx.moveTo(f.x, f.y);
+        lctx.lineTo(f.x - px * wl - wx * 2.6, f.y - py * wl - wy * 2.6);
+        lctx.lineTo(f.x - px * wl * 0.35 + wx * 1.6, f.y - py * wl * 0.35 + wy * 1.6);
+        lctx.closePath(); lctx.fill();
+        lctx.fillStyle = pal.strokes[ 0 ];
+        lctx.beginPath(); lctx.arc(f.x, f.y, 1.1, 0, TAU); lctx.fill();
+      }
+      lctx.globalAlpha = 1;
+    }
+
+    /* ================= pests (aphids) ================= */
+    let nextPest = 50;
+    function maybeSpawnPests() {
+      if (aphids.length >= 3 || specimens.length < 2 || game.bloomsLife < 3 || replay) return;
+      const cand = specimens.filter(s => s.bx0 < 1e8 && s.by1 - s.by0 > 10);
+      if (!cand.length) return;
+      const n = 1 + (Math.random() < 0.4 ? 1 : 0);
+      for (let i = 0; i < n && aphids.length < 3; i++)
+      {
+        const s = cand[ (Math.random() * cand.length) | 0 ];
+        aphids.push({
+          x: lerp(s.bx0, s.bx1, Math.random()), y: lerp(s.by0, s.by1, Math.random()),
+          dir: Math.random() * TAU, ttl: 22, wig: Math.random() * TAU
+        });
+      }
+      if (aphids.length) toast('aphids crawl among the beds — click them away');
+    }
+    function updateAphids(dt) {
+      for (let i = aphids.length - 1; i >= 0; i--)
+      {
+        const a = aphids[ i ];
+        a.ttl -= dt; a.wig += dt * 10;
+        if (a.ttl <= 0) { aphids.splice(i, 1); continue; }
+        a.dir += (vnoise(a.x * 0.01, a.y * 0.01 + T * 0.4) - 0.5) * 4 * dt;
+        a.x += Math.cos(a.dir) * 6 * dt; a.y += Math.sin(a.dir) * 6 * dt;
+        a.x = clamp(a.x, 8, worldW - 8); a.y = clamp(a.y, 8, worldH - 8);
+      }
+    }
+    function drawAphids() {
+      if (!aphids.length) return;
+      for (const a of aphids)
+      {
+        lctx.save();
+        lctx.translate(a.x, a.y); lctx.rotate(a.dir);
+        lctx.globalAlpha = .95; lctx.fillStyle = '#8F2F22';
+        lctx.beginPath(); lctx.ellipse(0, 0, 2.6, 1.6, 0, 0, TAU); lctx.fill();
+        lctx.fillStyle = '#C25A4A';
+        lctx.beginPath(); lctx.arc(2.2, 0, 0.8, 0, TAU); lctx.fill();
+        lctx.restore();
+      }
+      lctx.globalAlpha = 1;
+    }
+
+    /* ================= cursor & guides ================= */
+    function drawGuides() {
+      if (!pointer.inside || pointer.coarse || pinch) return;
+      if (params.sym !== 'free')
+      {
+        worldTransform(lctx);
+        const cx = worldW / 2, cy = worldH / 2, L = Math.hypot(worldW, worldH);
+        lctx.globalAlpha = .1; lctx.strokeStyle = pal.accent; lctx.lineWidth = 1; lctx.setLineDash([ 2, 5 ]);
+        const axis = a => {
+          lctx.beginPath();
+          lctx.moveTo(cx - Math.cos(a) * L, cy - Math.sin(a) * L);
+          lctx.lineTo(cx + Math.cos(a) * L, cy + Math.sin(a) * L); lctx.stroke();
+        };
+        if (params.sym === 'mirror') axis(Math.PI / 2);
+        else if (params.sym === 'rad4') { axis(0); axis(Math.PI / 2); }
+        else { axis(0); axis(Math.PI / 3); axis(2 * Math.PI / 3); }
+        lctx.setLineDash([]);
+        const pw = toWorld(pointer), d = Math.hypot(pw.x - cx, pw.y - cy);
+        lctx.globalAlpha = .14;
+        lctx.beginPath(); lctx.arc(cx, cy, d, 0, TAU); lctx.stroke();
+        lctx.beginPath(); lctx.moveTo(cx - 5, cy); lctx.lineTo(cx + 5, cy);
+        lctx.moveTo(cx, cy - 5); lctx.lineTo(cx, cy + 5); lctx.stroke();
+        lctx.globalAlpha = 1;
+        screenTransform(lctx);
+      }
+    }
+    function drawCursor() {
+      if (pointer.coarse || !pointer.inside || pinch) return;
+      if (panHold || panDrag)
+      {
+        lctx.strokeStyle = pal.accent; lctx.lineWidth = 1.4;
+        lctx.beginPath();
+        lctx.moveTo(pointer.x - 8, pointer.y); lctx.lineTo(pointer.x + 8, pointer.y);
+        lctx.moveTo(pointer.x, pointer.y - 8); lctx.lineTo(pointer.x, pointer.y + 8);
+        lctx.stroke();
+        return;
+      }
+      if (eraseOn)
+      {
+        lctx.strokeStyle = pal.accent; lctx.lineWidth = 1.4; lctx.setLineDash([ 3, 3 ]);
+        lctx.beginPath(); lctx.arc(pointer.x, pointer.y, 15, 0, TAU); lctx.stroke(); lctx.setLineDash([]);
+        lctx.beginPath(); lctx.moveTo(pointer.x - 5, pointer.y - 5); lctx.lineTo(pointer.x + 5, pointer.y + 5);
+        lctx.moveTo(pointer.x + 5, pointer.y - 5); lctx.lineTo(pointer.x - 5, pointer.y + 5); lctx.stroke();
+        return;
+      }
+      if (graftOn)
+      {
+        lctx.strokeStyle = pal.accent; lctx.lineWidth = 1.4;
+        lctx.beginPath(); lctx.arc(pointer.x, pointer.y, 10, 0, TAU); lctx.stroke();
+        lctx.beginPath(); lctx.moveTo(pointer.x - 4, pointer.y); lctx.lineTo(pointer.x + 4, pointer.y);
+        lctx.moveTo(pointer.x, pointer.y - 4); lctx.lineTo(pointer.x, pointer.y + 4); lctx.stroke();
+        return;
+      }
+      if (pointer.inside)
+      {
+        const wp = toWorld(pointer);
+        for (const a of aphids)
+        {
+          if (Math.hypot(a.x - wp.x, a.y - wp.y) < 16)
+          {
+            const sx = (a.x - view.x) * view.s, sy = (a.y - view.y) * view.s;
+            lctx.strokeStyle = '#8F2F22'; lctx.lineWidth = 1.2; lctx.setLineDash([ 2, 3 ]);
+            lctx.beginPath(); lctx.arc(sx, sy, 9, 0, TAU); lctx.stroke(); lctx.setLineDash([]);
+            break;
+          }
+        }
+        for (const f of flies)
+        {
+          if (Math.hypot(f.x - wp.x, f.y - wp.y) < 26)
+          {
+            const sx = (f.x - view.x) * view.s, sy = (f.y - view.y) * view.s;
+            lctx.strokeStyle = pal.accent; lctx.lineWidth = 1.2; lctx.setLineDash([ 2, 3 ]);
+            lctx.beginPath(); lctx.arc(sx, sy, 11, 0, TAU); lctx.stroke(); lctx.setLineDash([]);
+            break;
+          }
+        }
+      }
+      const r = 9 + pointer.speedSm * 9;
+      lctx.globalAlpha = .6; lctx.strokeStyle = pal.ink; lctx.lineWidth = 1.2;
+      lctx.beginPath(); lctx.arc(pointer.x, pointer.y, r, 0, TAU); lctx.stroke();
+      if (pointer.down)
+      {
+        lctx.strokeStyle = pal.accent; lctx.lineWidth = 2.2;
+        lctx.beginPath(); lctx.arc(pointer.x, pointer.y, r, -Math.PI / 2, -Math.PI / 2 + TAU * pointer.energy); lctx.stroke();
+      }
+      lctx.globalAlpha = 1; lctx.fillStyle = pal.ink;
+      lctx.beginPath(); lctx.arc(pointer.x, pointer.y, 1.4, 0, TAU); lctx.fill();
+    }
+
+    /* ================= audio ================= */
+    let AC = null, master = null, voices = 0, windGain = null;
+    function ensureAudio() {
+      if (AC) return;
+      try
+      {
+        AC = new (window.AudioContext || window.webkitAudioContext)();
+        master = AC.createGain(); master.gain.value = .5; master.connect(AC.destination);
+        const len = AC.sampleRate * 2, buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++)d[ i ] = Math.random() * 2 - 1;
+        const src = AC.createBufferSource(); src.buffer = buf; src.loop = true;
+        const filt = AC.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 300;
+        windGain = AC.createGain(); windGain.gain.value = 0;
+        const lfo = AC.createOscillator(), lfoG = AC.createGain();
+        lfo.frequency.value = 0.09; lfoG.gain.value = 0.02;
+        lfo.connect(lfoG); lfoG.connect(windGain.gain); lfo.start();
+        src.connect(filt); filt.connect(windGain); windGain.connect(master); src.start();
+        updateWindAudio();
+      } catch (e) { noteErr('audio', e); }
+    }
+    function updateWindAudio() {
+      if (windGain && AC) windGain.gain.setTargetAtTime(soundOn ? params.wind * 0.09 : 0, AC.currentTime, 0.4);
+    }
+    function doGust() {
+      gust = 1;
+      gameEvent('gust');
+      if (AC && soundOn && windGain)
+      {
+        const t0 = AC.currentTime;
+        windGain.gain.cancelScheduledValues(t0);
+        windGain.gain.setTargetAtTime(0.5, t0, 0.05);
+        windGain.gain.setTargetAtTime(params.wind * 0.09, t0 + 0.8, 0.5);
+      }
+    }
+    const SCALE = [ 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25, 783.99, 880 ];
+    function chime(spec) {
+      if (!AC || voices >= 7) return;
+      voices++;
+      const t0 = AC.currentTime;
+      const f = SCALE[ (Math.random() * SCALE.length) | 0 ] * (spec && spec.energy > 0.7 ? 2 : 1);
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'sine'; o.frequency.value = f; o.detune.value = (Math.random() - 0.5) * 8;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.09, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.1);
+      o.connect(g);
+      if (AC.createStereoPanner)
+      {
+        const p = AC.createStereoPanner(); p.pan.value = (Math.random() - 0.5) * 1.2;
+        g.connect(p); p.connect(master);
+      }
+      else g.connect(master);
+      o.start(t0); o.stop(t0 + 1.15); o.onended = () => voices--;
+    }
+    function thump() {
+      if (!AC) return;
+      const t0 = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(120, t0);
+      o.frequency.exponentialRampToValueAtTime(50, t0 + 0.18);
+      g.gain.setValueAtTime(0.12, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+      o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + 0.25);
+    }
+    function tone(f, dt0, dur, g0) {
+      if (!AC || !soundOn) return;
+      const t0 = AC.currentTime + dt0;
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(g0, t0 + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(master);
+      o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+    function jingle() { tone(523.25, 0, .35, .08); tone(659.25, .09, .35, .08); tone(783.99, .18, .5, .09); }
+    function fanfare() { [ 392, 523.25, 659.25, 783.99, 1046.5 ].forEach((f, i) => tone(f, i * 0.11, .4, .08)); }
+    function fanfareBig() { [ 392, 493.88, 587.33, 783.99, 987.77, 1174.7 ].forEach((f, i) => tone(f, i * 0.12, .5, .08)); }
+
+    /* ================= history ================= */
+    function pushAction(a) { actions.push(a); if (actions.length > 40) actions.shift(); redoActions.length = 0; }
+    function killSpecimens(list) {
+      const set = new Set(list); let any = false;
+      for (const s of list) { if (s.dead) continue; s.dead = true; any = true; totalOps -= s.ops.length; }
+      if (!any) return false;
+      specimens = specimens.filter(s => !set.has(s));
+      tips = tips.filter(t => !set.has(t.spec));
+      spines = spines.filter(sp => !set.has(sp.spec));
+      bloomQueue = bloomQueue.filter(b => !set.has(b.spec));
+      eraseDirty = true;
+      return true;
+    }
+    function revive(list) { for (const s of list) { s.dead = false; specimens.push(s); totalOps += s.ops.length; } }
+    function undo() {
+      if (replay) { toast('wait for the replay'); return; }
+      const a = actions.pop();
+      if (!a) { toast('nothing to undo'); return; }
+      if (a.type === 'draw') { killSpecimens(a.list); toast('undid growth'); }
+      else { revive(a.list); toast('restored erased growth'); }
+      redoActions.push(a); updateReadout();
+    }
+    function redo() {
+      if (replay) { toast('wait for the replay'); return; }
+      const a = redoActions.pop();
+      if (!a) return;
+      if (a.type === 'draw') { revive(a.list); toast('redid growth'); }
+      else { killSpecimens(a.list); toast('erased again'); }
+      actions.push(a); updateReadout();
+    }
+    function redrawAll() {
+      clearScreen(actx);
+      for (const s of specimens) for (const op of s.ops) paintOp(op);
+    }
+
+    /* ================= replay / layer / clear ================= */
+    function startReplay() {
+      if (replay) return;
+      const list = specimens.flatMap(s => s.ops).sort((a, b) => (a.q || 0) - (b.q || 0));
+      if (!list.length) { toast('nothing to replay yet'); return; }
+      replay = { list, i: 0 }; eraseDirty = false;
+      clearScreen(actx);
+      toast('replaying growth');
+    }
+    function layerDown() {
+      if (replay) { toast('wait for the replay'); return; }
+      const tmp = document.createElement('canvas');
+      tmp.width = bedC.width; tmp.height = bedC.height;
+      const g = tmp.getContext('2d');
+      g.setTransform(DPR / view.s, 0, 0, DPR / view.s, view.x * DPR, view.y * DPR);
+      g.drawImage(artC, 0, 0, artC.width, artC.height, 0, 0, W, H);
+      bctx.save(); bctx.globalAlpha = 0.45; bctx.drawImage(tmp, 0, 0); bctx.restore();
+      specimens = []; tips = []; spines = []; bloomQueue = []; actions = []; redoActions = [];
+      totalOps = 0; branchCount = 0; lastBC = 0;
+      clearScreen(actx); beds++;
+      toast('pressed to bed — layer ' + beds + ' started');
+      updateReadout();
+    }
+    function clearAll() {
+      specimens = []; tips = []; spines = []; bloomQueue = []; actions = []; redoActions = [];
+      totalOps = 0; branchCount = 0; lastBC = 0; beds = 0; replay = null; eraseDirty = false;
+      flies.length = 0; aphids.length = 0;
+      perfTier = 0; fxOn = true;
+      bctx.setTransform(1, 0, 0, 1, 0, 0);
+      bctx.clearRect(0, 0, bedC.width, bedC.height);
+      clearScreen(actx);
+      initParticles();
+      autoSig = '';
+      toast('the bed is cleared — draw again');
+      updateReadout();
+    }
+    let clearArmT = 0;
+    function requestClear() {
+      const b = $('btnClear');
+      if (!specimens.length && !beds) { clearArmT = 0; b.textContent = 'Clear'; clearAll(); return; }
+      if (Date.now() - clearArmT < 2600)
+      {
+        clearArmT = 0; b.textContent = 'Clear'; b.classList.remove('arm');
+        clearAll(); return;
+      }
+      clearArmT = Date.now();
+      b.textContent = 'sure?'; b.classList.add('arm');
+      toast('press clear again to confirm');
+      setTimeout(() => {
+        if (Date.now() - clearArmT >= 2500) { clearArmT = 0; b.textContent = 'Clear'; b.classList.remove('arm'); }
+      }, 2600);
+    }
+    function reseed() {
+      seed = 1000 + Math.floor(Math.random() * 90000); reseedNoise(seed);
+      toast('seed ' + seed + ' sown'); updateReadout();
+    }
+
+    /* ================= deliver & judgment ================= */
+    function deliverGarden() {
+      if (replay) { toast('wait for the replay'); return; }
+      if (!specimens.length && !beds) { toast('the garden is empty — grow something first'); return; }
+      if (game.gardensDone > 0 && totalOps - game.lastDeliverOps < 150)
+      {
+        toast('tend a little more before the next judging'); return;
+      }
+      let bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9, blooms = 0;
+      const rules = new Set();
+      for (const s of specimens)
+      {
+        rules.add(s.rule);
+        if (s.bx0 < bx0) bx0 = s.bx0; if (s.by0 < by0) by0 = s.by0;
+        if (s.bx1 > bx1) bx1 = s.bx1; if (s.by1 > by1) by1 = s.by1;
+        for (const op of s.ops) if (op.t === 2) blooms++;
+      }
+      const cov = (bx1 > bx0 && by1 > by0)
+        ? clamp(((bx1 - bx0) / worldW) * ((by1 - by0) / worldH), 0, 1) : 0;
+      const score = Math.round(cov * 45 + Math.min(rules.size, 6) / 6 * 25
+        + Math.min(blooms, 50) / 50 * 18 + Math.min(branchCount, 400) / 400 * 12);
+      const grade = score >= 85 ? 'S' : score >= 70 ? 'A' : score >= 50 ? 'B' : score >= 30 ? 'C' : 'D';
+      let pay = game.sandbox ? 0 : Math.round((20 + score * 0.9
+        + (grade === 'S' ? 40 : grade === 'A' ? 25 : grade === 'B' ? 10 : 0))
+        * (1 + Math.min(game.chain, 9) * 0.05));
+      if (!game.sandbox && pay && rushT > 0) pay = Math.round(pay * 1.5);
+      game.gardensDone++; game.chain = Math.min(9, game.chain + 1);
+      if (gradeRank(grade) > gradeRank(game.bestGrade)) game.bestGrade = grade;
+      game.ess += pay; game.lastDeliverOps = totalOps;
+      if (pay) { pulseEss(); gradeRank(grade) >= 3 ? fanfareBig() : jingle(); }
+      gameEvent('deliver'); checkAch();
+      if (bx1 > bx0 && !RM) for (let i = 0; i < 16; i++)
+        motes.push({ x: bx0 + Math.random() * (bx1 - bx0), y: by0 + Math.random() * (by1 - by0), t: -i * 0.05 });
+      $('jGrade').textContent = grade;
+      $('jRows').innerHTML =
+        `<div class="jrow"><span>coverage</span><b>${Math.round(cov * 100)}%</b></div>`
+        + `<div class="jrow"><span>variety</span><b>${rules.size} species</b></div>`
+        + `<div class="jrow"><span>blooms</span><b>${blooms}</b></div>`
+        + `<div class="jrow"><span>craft</span><b>${branchCount} branches</b></div>`
+        + `<div class="jrow"><span>gardens judged</span><b>${game.gardensDone}</b></div>`;
+      $('jPay').textContent = pay > 0
+        ? `+${pay} essence${game.chain > 1 ? ` · garden chain ×${game.chain}` : ''}${rushT > 0 ? ' · bloom rush' : ''}`
+        : (game.sandbox ? 'sandbox — judged for practice' : 'the society offers quiet applause');
+      openJudge();
+      saveGameSoon(); updateReadout();
+    }
+    let jFocus = null;
+    function openJudge() {
+      jFocus = document.activeElement;
+      $('judge').removeAttribute('hidden');
+      $('jKeep').focus();
+    }
+    function closeJudge() {
+      $('judge').setAttribute('hidden', '');
+      if (jFocus && jFocus.focus) jFocus.focus();
+    }
+    $('jKeep').onclick = closeJudge;
+    $('jNew').onclick = () => { closeJudge(); clearAll(); };
+    $('judge').addEventListener('pointerdown', e => { if (e.target.id === 'judge') closeJudge(); });
+
+    /* ================= serialization & validation ================= */
+    function serializeScene() {
+      return {
+        app: 'thicket', v: APP_VERSION, pal: palName, seed, W: worldW, H: worldH, beds,
+        bed: beds > 0 ? bedC.toDataURL('image/jpeg', 0.6) : null,
+        specs: specimens.map(s => ({ r: s.rule, ops: s.ops }))
+      };
+    }
+    function validateScene(data) {
+      try
+      {
+        if (!data || typeof data !== 'object') return null;
+        if (data.app !== 'thicket' && !isNum(data.v)) return null;
+        if (!Array.isArray(data.specs)) return null;
+        const specs = [];
+        for (const sd of data.specs.slice(0, 400))
+        {
+          if (!sd || typeof sd !== 'object') continue;
+          const rule = MODES[ sd.r ] ? sd.r : null;
+          if (!rule || !Array.isArray(sd.ops)) continue;
+          const ops = [];
+          for (const op of sd.ops.slice(0, 20000))
+          {
+            if (!op || typeof op !== 'object') continue;
+            if (op.t === 1 && [ op.x1, op.y1, op.x2, op.y2, op.w ].every(isNum) && typeof op.c === 'string')
+              ops.push({
+                t: 1, x1: +op.x1, y1: +op.y1, x2: +op.x2, y2: +op.y2,
+                w: clamp(+op.w, 0.2, 8), c: op.c.slice(0, 32), q: +op.q || 0
+              });
+            else if (op.t === 2 && Array.isArray(op.parts) && op.parts.length <= 64)
+            {
+              const parts = [];
+              for (const p of op.parts)
+              {
+                if (!p || typeof p !== 'object') continue;
+                if (p.kind === 'dot' && isNum(p.x) && isNum(p.y) && isNum(p.r) && typeof p.c === 'string')
+                  parts.push({
+                    kind: 'dot', x: +p.x, y: +p.y, r: clamp(+p.r, 0.1, 40), c: p.c.slice(0, 32),
+                    a: clamp(isNum(p.a) ? +p.a : 1, 0, 1)
+                  });
+                else if (p.kind === 'petal' && isNum(p.x) && isNum(p.y))
+                  parts.push({
+                    kind: 'petal', x: +p.x, y: +p.y, rot: isNum(p.rot) ? +p.rot : 0,
+                    d: isNum(p.d) ? +p.d : 0, rx: clamp(isNum(p.rx) ? +p.rx : 1, 0.1, 80),
+                    ry: clamp(isNum(p.ry) ? +p.ry : 1, 0.05, 80), c: String(p.c).slice(0, 32),
+                    a: clamp(isNum(p.a) ? +p.a : 1, 0, 1)
+                  });
+              }
+              if (parts.length) ops.push({ t: 2, parts });
+            }
+            else if (op.t === 3 && isNum(op.x) && isNum(op.y) && isNum(op.r))
+              ops.push({
+                t: 3, x: +op.x, y: +op.y, r: clamp(+op.r, 0.1, 40),
+                c: String(op.c || '#000').slice(0, 32), a: clamp(isNum(op.a) ? +op.a : 1, 0, 1)
+              });
+            else if (op.t === 4 && Array.isArray(op.pts) && op.pts.length >= 3 && op.pts.length <= 64)
+            {
+              const pts = [];
+              for (const p of op.pts) { if (Array.isArray(p) && isNum(p[ 0 ]) && isNum(p[ 1 ])) pts.push([ +p[ 0 ], +p[ 1 ] ]); }
+              if (pts.length >= 3)
+                ops.push({
+                  t: 4, pts, c: String(op.c || '#000').slice(0, 32),
+                  o: op.o ? String(op.o).slice(0, 32) : null, w: clamp(isNum(op.w) ? +op.w : 1, 0.2, 8)
+                });
+            }
+          }
+          if (ops.length) specs.push({ r: rule, ops });
+        }
+        if (!specs.length) return null;
+        return {
+          v: isNum(data.v) ? +data.v : APP_VERSION,
+          pal: (typeof data.pal === 'string' && PALETTES[ data.pal ]) ? data.pal : palName,
+          seed: clamp(isNum(data.seed) ? +data.seed : seed, 1, 999999),
+          W: clamp(isNum(data.W) ? +data.W : worldW, 200, 20000),
+          H: clamp(isNum(data.H) ? +data.H : worldH, 200, 20000),
+          beds: clamp(isNum(data.beds) ? +data.beds : 0, 0, 50),
+          bed: (typeof data.bed === 'string' && data.bed.startsWith('data:image')) ? data.bed : null,
+          specs
+        };
+      } catch (e) { noteErr('validate', e); return null; }
+    }
+    function restoreScene(sc, label) {
+      sc = validateScene(sc);
+      if (!sc) { toast('nothing restorable found'); return; }
+      const dx = Math.round((worldW - sc.W) / 2), dy = Math.round((worldH - sc.H) / 2);
+      const shift = op => {
+        if (op.t === 1) { op.x1 += dx; op.y1 += dy; op.x2 += dx; op.y2 += dy; }
+        else if (op.t === 2) { for (const p of op.parts) { p.x += dx; p.y += dy; } }
+        else if (op.t === 3) { op.x += dx; op.y += dy; }
+        else if (op.t === 4) { for (const p of op.pts) { p[ 0 ] += dx; p[ 1 ] += dy; } }
+      };
+      if (dx || dy) for (const sd of sc.specs) for (const op of sd.ops) shift(op);
+      bctx.setTransform(1, 0, 0, 1, 0, 0);
+      bctx.clearRect(0, 0, bedC.width, bedC.height);
+      if (sc.bed)
+      {
+        const img = new Image();
+        img.onload = () => {
+          bctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          bctx.drawImage(img, dx, dy, sc.W, sc.H);
+          bctx.setTransform(1, 0, 0, 1, 0, 0);
+        };
+        img.src = sc.bed;
+      }
+      beds = sc.beds;
+      palName = sc.pal; pal = PALETTES[ palName ]; applyPalette();
+      seed = sc.seed; reseedNoise(seed);
+      specimens = []; tips = []; spines = []; bloomQueue = []; fx = []; flies.length = 0; aphids.length = 0;
+      actions = []; redoActions = []; totalOps = 0; branchCount = 0; groupSeq = 0; replay = null;
+      game.lastDeliverOps = 0;
+      let maxQ = 0;
+      for (const sd of sc.specs)
+      {
+        const spec = {
+          ops: sd.ops, rule: sd.r, dead: false, group: ++groupSeq, curv: 0.3,
+          maxDepth: 5, energy: 0.4, anchors: [], grid: sd.r === 'vein' ? new Map() : null, gseq: 0,
+          bx0: 1e9, by0: 1e9, bx1: -1e9, by1: -1e9
+        };
+        for (const op of sd.ops)
+        {
+          measure(spec, op);
+          if (op.q) maxQ = Math.max(maxQ, op.q);
+          if (op.t === 1) branchCount++;
+        }
+        specimens.push(spec); totalOps += spec.ops.length;
+      }
+      lastBC = branchCount;
+      recSeq = maxQ + 1;
+      clearScreen(actx); redrawAll(); eraseDirty = false;
+      updateReadout();
+      toast(label + ' — seed ' + seed);
+    }
+
+    /* ================= project files ================= */
+    function saveProject() {
+      if (!specimens.length && !beds) { toast('nothing to save yet'); return; }
+      try
+      {
+        const settings = {
+          mode: params.mode, sym: params.sym, meadow: params.meadow, pal: palName, plate: plateOn,
+          s: {
+            density: params.density, curl: params.curl, wild: params.wild, reach: params.reach,
+            trop: params.trop, wind: params.wind, flourish: params.flourish, tempo: params.tempo
+          }
+        };
+        const out = { app: 'thicket', v: APP_VERSION, saved: new Date().toISOString(), settings, scene: serializeScene() };
+        const blob = new Blob([ JSON.stringify(out) ], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.download = `thicket-project-${seed}.json`;
+        a.href = URL.createObjectURL(blob); a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast('project saved as json');
+      } catch (e) { noteErr('project-save', e); toast('project save failed'); }
+    }
+    function openProjectFile(file) {
+      if (replay) { toast('wait for the replay'); return; }
+      if (!file) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try
+        {
+          const data = JSON.parse(rd.result);
+          const sc = validateScene(data.scene || data);
+          if (!sc) { toast('no valid garden in that file'); return; }
+          const st = data.settings;
+          if (st && typeof st === 'object')
+          {
+            if (typeof st.mode === 'string' && ruleAvailable(st.mode)) params.mode = st.mode;
+            if (SYM_LABEL[ st.sym ]) params.sym = st.sym;
+            if (typeof st.pal === 'string' && PALETTES[ st.pal ]) { palName = st.pal; pal = PALETTES[ palName ]; }
+            if (typeof st.plate === 'boolean') plateOn = st.plate;
+            if (st.s && typeof st.s === 'object')
+              for (const k in st.s) if (k in params && isNum(st.s[ k ]))
+              {
+                params[ k ] = st.s[ k ];
+                const sl = SL[ k ];
+                if (sl) { sl.s.value = Math.round(st.s[ k ] * 100); sl.upd(); }
+              }
+            syncPlate(); syncMeadowBtn();
+          }
+          setMode(params.mode); setSym(params.sym); applyPalette();
+          restoreScene(sc, 'project loaded');
+        } catch (e) { noteErr('project-open', e); toast('not a readable project file'); }
+      };
+      rd.onerror = () => toast('could not read that file');
+      rd.readAsText(file);
+    }
+
+    /* ================= share links ================= */
+    const SHARE_KEYS = [ 'density', 'curl', 'wild', 'reach', 'trop', 'wind', 'flourish', 'tempo' ];
+    function readHash() {
+      if (!location.hash || location.hash.length < 4) return false;
+      try
+      {
+        const q = new URLSearchParams(location.hash.slice(1));
+        let used = false;
+        const r = q.get('r'), s = q.get('s'), p = q.get('p'), d = q.get('d');
+        if (r && MODES[ r ] && ruleAvailable(r)) { params.mode = r; used = true; }
+        if (s && SYM_LABEL[ s ]) { params.sym = s; used = true; }
+        if (p && PALETTES[ p ]) { palName = p; pal = PALETTES[ palName ]; used = true; }
+        if (d)
+        {
+          const v = d.split(',').map(x => clamp(+x || 0, 0, 100));
+          SHARE_KEYS.forEach((k, i) => {
+            params[ k ] = v[ i ] / 100;
+            const sl = SL[ k ]; if (sl) { sl.s.value = v[ i ]; sl.upd(); }
+          });
+          used = true;
+        }
+        return used;
+      } catch (e) { return false; }
+    }
+    function shareLink() {
+      try
+      {
+        const q = new URLSearchParams();
+        q.set('r', params.mode); q.set('s', params.sym); q.set('p', palName);
+        q.set('d', SHARE_KEYS.map(k => Math.round(params[ k ] * 100)).join(','));
+        location.hash = q.toString();
+        const url = location.href;
+        if (navigator.clipboard && navigator.clipboard.writeText)
+          navigator.clipboard.writeText(url)
+            .then(() => toast('settings link copied'))
+            .catch(() => toast('link is in the address bar'));
+        else toast('link is in the address bar');
+      } catch (e) { noteErr('share', e); toast('could not build link'); }
+    }
+    addEventListener('hashchange', () => {
+      if (readHash())
+      {
+        setMode(params.mode); setSym(params.sym); applyPalette();
+        syncMeadowBtn(); updateWindAudio(); saveSettings();
+        toast('settings updated from link');
+      }
+    });
+
+    /* ================= timelapse recorder ================= */
+    let recording = null;
+    function recordTimelapse() {
+      if (!window.MediaRecorder || !artC.captureStream) { toast('recording is not supported here'); return; }
+      if (recording) { stopRecording(); return; }
+      if (replay) { toast('wait for the current replay'); return; }
+      const list = specimens.flatMap(s => s.ops).sort((a, b) => (a.q || 0) - (b.q || 0));
+      if (!list.length) { toast('nothing to record yet'); return; }
+      try
+      {
+        const cap = document.createElement('canvas');
+        cap.width = artC.width; cap.height = artC.height;
+        const g = cap.getContext('2d');
+        const stream = cap.captureStream(30);
+        let mime = 'video/webm';
+        for (const m of [ 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm' ])
+          if (MediaRecorder.isTypeSupported(m)) { mime = m; break; }
+        const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
+        const chunks = [];
+        rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = () => {
+          document.body.classList.remove('recording');
+          try
+          {
+            const blob = new Blob(chunks, { type: mime });
+            const a = document.createElement('a');
+            a.download = `thicket-timelapse-${seed}.webm`;
+            a.href = URL.createObjectURL(blob); a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+            toast('timelapse saved');
+          } catch (e) { noteErr('rec-save', e); toast('timelapse save failed'); }
+        };
+        clearScreen(actx);
+        replay = { list, i: 0 };
+        rec.start(120);
+        recording = { rec, g };
+        document.body.classList.add('recording');
+        toast('recording timelapse — press Record again to stop');
+      } catch (e) { noteErr('record', e); toast('recording failed to start'); }
+    }
+    function stopRecording() {
+      if (!recording) return;
+      const rec = recording.rec;
+      recording = null;
+      try { rec.stop(); } catch (e) { }
+    }
+
+    /* ================= shelf / autosave ================= */
+    function makeThumb() {
+      const w = 120, h = Math.max(40, Math.round(120 * worldH / worldW));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d');
+      g.fillStyle = pal.bg; g.fillRect(0, 0, w, h);
+      const sc = w / worldW;
+      g.setTransform(sc, 0, 0, sc, 0, 0);
+      if (beds > 0) g.drawImage(bedC, 0, 0, worldW, worldH);
+      for (const s of specimens) for (const op of s.ops) paintOp(op, g);
+      return c.toDataURL('image/jpeg', 0.55);
+    }
+    function shelfSave(i) {
+      if (replay) { toast('wait for the replay'); return; }
+      if (!specimens.length && !beds) { toast('nothing to shelve yet'); return; }
+      try
+      {
+        const thumb = makeThumb();
+        const json = JSON.stringify(serializeScene());
+        if (json.length > 4200000) { toast('scene too dense for the shelf'); return; }
+        localStorage.setItem('thicket.shelf.' + i, json);
+        localStorage.setItem('thicket.shelf.thumb.' + i, thumb);
+        toast('shelved to slot ' + i);
+      } catch (err) { toast('shelf save failed — storage full'); }
+      refreshShelf();
+    }
+    function shelfLoad(i) {
+      if (replay) { toast('wait for the replay'); return; }
+      let data = null;
+      try { data = JSON.parse(localStorage.getItem('thicket.shelf.' + i) || 'null'); } catch (e) { data = null; }
+      if (!data) { toast('slot ' + i + ' is empty'); return; }
+      restoreScene(data, 'slot ' + i + ' restored');
+    }
+    let autoSig = '';
+    setInterval(() => {
+      if (document.hidden) return;
+      const sig = specimens.length + '|' + totalOps + '|' + beds;
+      if (sig !== autoSig && specimens.length)
+      {
+        autoSig = sig;
+        try { localStorage.setItem('thicket.autosave', JSON.stringify(serializeScene())); } catch (e) { }
+        refreshShelf();
+      }
+    }, 15000);
+    function refreshShelf() {
+      for (let i = 1; i <= 3; i++)
+      {
+        let occ = false, thumb = null;
+        try
+        {
+          occ = !!localStorage.getItem('thicket.shelf.' + i);
+          thumb = localStorage.getItem('thicket.shelf.thumb.' + i);
+        } catch (e) { }
+        const b = $('shelfL' + i);
+        if (b)
+        {
+          b.textContent = 'load ' + i + (occ ? ' •' : '');
+          b.style.backgroundImage = thumb ? `url(${thumb})` : 'none';
+        }
+      }
+      let hasAuto = false;
+      try { hasAuto = !!localStorage.getItem('thicket.autosave'); } catch (e) { }
+      const ab = $('btnAuto');
+      if (ab) ab.classList.toggle('off', !hasAuto);
+    }
+
+    /* ================= presets & dice ================= */
+    const PRESETS = [
+      { n: 'Woodland', p: { mode: 'willow', sym: 'free', pal: 'herbarium', s: { density: 45, curl: 40, wild: 30, reach: 55, lean: 25, wind: 20, flourish: 45, tempo: 45 } }, sc: 3 },
+      { n: 'Tidewater', p: { mode: 'kelp', sym: 'free', pal: 'deepwater', s: { density: 55, curl: 55, wild: 25, reach: 60, lean: -30, wind: 35, flourish: 40, tempo: 35 } }, sc: 3 },
+      { n: 'Frostwork', p: { mode: 'frost', sym: 'rad6', pal: 'nocturne', s: { density: 60, curl: 25, wild: 12, reach: 45, lean: 0, wind: 5, flourish: 30, tempo: 60 } }, sc: 1 },
+      { n: 'Plumage', p: { mode: 'plume', sym: 'mirror', pal: 'verdigris', s: { density: 45, curl: 60, wild: 20, reach: 50, lean: 0, wind: 10, flourish: 35, tempo: 45 } }, sc: 2 },
+      { n: 'Lacework', p: { mode: 'vein', sym: 'free', pal: 'orchid', s: { density: 65, curl: 45, wild: 20, reach: 40, lean: 0, wind: 5, flourish: 20, tempo: 50 } }, sc: 2 },
+      { n: 'Fungal log', p: { mode: 'fungus', sym: 'free', pal: 'peat', s: { density: 30, curl: 20, wild: 15, reach: 55, lean: 0, wind: 10, flourish: 55, tempo: 40 } }, sc: 3 },
+      { n: 'Geode', p: { mode: 'crystal', sym: 'rad4', pal: 'nocturne', s: { density: 55, curl: 20, wild: 15, reach: 60, lean: 0, wind: 0, flourish: 35, tempo: 45 } }, sc: 2 },
+      { n: 'Cairns', p: { mode: 'rock', sym: 'free', pal: 'peat', s: { density: 45, curl: 30, wild: 20, reach: 55, lean: 0, wind: 10, flourish: 30, tempo: 40 } }, sc: 3 }
+    ];
+    function applyPreset(p) {
+      if (replay) { toast('wait for the replay'); return; }
+      if (!ruleAvailable(p.p.mode))
+      {
+        toast(`"${p.n}" needs ${p.p.mode} — unlock it first`); return;
+      }
+      params.meadow = false; syncMeadowBtn();
+      setMode(p.p.mode); setSym(p.p.sym);
+      palName = p.p.pal; pal = PALETTES[ palName ]; applyPalette();
+      for (const k in p.s)
+      {
+        const pk = k === 'lean' ? 'trop' : k;
+        params[ pk ] = p.s[ k ] / 100;
+        const sl = SL[ pk ]; if (sl) { sl.s.value = p.s[ k ]; sl.upd(); }
+      }
+      saveSettings(); updateWindAudio();
+      toast(p.n + ' — ' + p.p.mode);
+      setTimeout(() => scatter(p.sc), 300);
+    }
+    function dice() {
+      const sk = [ 'free', 'mirror', 'rad4', 'rad6' ], pk = Object.keys(PALETTES);
+      const av = RULE_KEYS.filter(ruleAvailable);
+      const r = av[ (Math.random() * av.length) | 0 ];
+      const s = sk[ (Math.random() * sk.length) | 0 ], pn = pk[ (Math.random() * pk.length) | 0 ];
+      params.meadow = false; syncMeadowBtn();
+      setMode(r); setSym(s);
+      palName = pn; pal = PALETTES[ pn ]; applyPalette();
+      const R = (a, b) => Math.round(a + Math.random() * (b - a));
+      const sets = {
+        density: R(30, 80), curl: R(20, 80), wild: R(10, 60), reach: R(30, 75),
+        lean: R(0, 100) - 50, wind: R(0, 60), flourish: R(20, 70), tempo: R(25, 75)
+      };
+      for (const k in sets)
+      {
+        const pk2 = k === 'lean' ? 'trop' : k;
+        params[ pk2 ] = sets[ k ] / 100;
+        const sl = SL[ pk2 ]; sl.s.value = sets[ k ]; sl.upd();
+      }
+      saveSettings(); updateWindAudio();
+      toast('dice — ' + r + ' · ' + s + ' · ' + pn);
+      setTimeout(() => scatter(2), 350);
+    }
+
+    /* ================= drift gardener ================= */
+    function driftCheck() {
+      if (!driftOn || stroke || eraseSess || graftDrag || replay || pointer.down || pinch) return;
+      if (T - lastInteract < 8 || T - lastDrift < 7) return;
+      if (tips.length > tipCap() * 0.5 || specimens.length > 80) return;
+      lastDrift = T;
+      let x, y;
+      const near = specimens.filter(s => s.bx0 < 1e8);
+      if (near.length && Math.random() < 0.6)
+      {
+        const s = near[ (Math.random() * near.length) | 0 ];
+        x = (s.bx0 + s.bx1) / 2 + (Math.random() - 0.5) * 180;
+        y = (s.by0 + s.by1) / 2 + (Math.random() - 0.5) * 180;
+      } else { x = worldW * 0.15 + Math.random() * worldW * 0.7; y = worldH * 0.15 + Math.random() * worldH * 0.7; }
+      plantSeedling(clamp(x, 30, worldW - 30), clamp(y, 30, worldH - 30));
+    }
+
+    /* ================= performance governor ================= */
+    let perfT = 0;
+    function governor() {
+      perfT++;
+      if (perfT < 120) { perfT %= 120; return; }
+      if (fpsV < 40 && perfTier < 2)
+      {
+        perfTier++;
+        if (perfTier === 1) { fxOn = false; trimParticles(0.55); }
+        else trimParticles(0.5);
+        toast('performance mode — eased ambience');
+      }
+    }
+    function trimParticles(f) {
+      const n = Math.max(20, Math.round(particles.length * f));
+      if (particles.length > n) particles.length = n;
+    }
+
+    /* ================= world clock, contracts, tints ================= */
+    function updateSeasonTick(dt) {
+      seasonT += dt;
+      if (seasonT < SEASON_LEN) return;
+      seasonT = 0;
+      seasonIdx = (seasonIdx + 1) % SEASONS.length;
+      const s = season();
+      toast('the season turns — ' + s.n + ' · ' + s.note);
+      refreshRuleButtons(); updateReadout(); saveGameSoon();
+    }
+    function updateTint() {
+      const k = dayPhase();
+      $('tintD').style.background = {
+        day: 'transparent',
+        dusk: 'rgba(255,150,70,.06)',
+        night: 'rgba(18,22,52,.17)',
+        dawn: 'rgba(255,170,110,.06)'
+      }[ k ];
+      $('tintS').style.background =
+        [ 'rgba(110,180,90,.05)', 'rgba(235,195,70,.05)', 'rgba(200,115,40,.07)', 'rgba(110,150,215,.08)' ][ seasonIdx ];
+    }
+    function tickContracts() {
+      if (!cur || cur.done || !cur.deadline) return;
+      const r = Math.max(0, Math.ceil(cur.deadline - T));
+      const el = $('qTime');
+      const s = '\u23F3' + r + 's';
+      if (el._v !== s)
+      {
+        el._v = s; el.textContent = s;
+        el.style.color = r <= 15 ? 'var(--accent)' : '';
+      }
+      if (T > cur.deadline)
+      {
+        cur = null; game.streak = 0;
+        toast('the patron ran out of patience — commission expired');
+        nextQuest(); saveGameSoon();
+      }
+    }
+
+    /* ================= main loop ================= */
+    let running = true, T = 0, last = performance.now(), fc = 0, fpsAcc = 0, fpsN = 0, fpsV = 60;
+    let rushT = 0, nextRush = 140 + Math.random() * 120;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { running = false; if (AC) AC.suspend(); }
+      else
+      {
+        running = true; last = performance.now();
+        if (soundOn && AC) AC.resume();
+        requestAnimationFrame(frame);
+      }
+    });
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (!running) return;
+      try
+      {
+        const dt = Math.min(.05, (now - last) / 1000); last = now; T += dt;
+        gust = Math.max(0, gust - dt * 0.75);
+        fpsAcc += dt; fpsN++;
+        if (fpsN >= 30) { fpsV = Math.max(1, Math.round(fpsN / Math.max(fpsAcc, 0.001))); fpsAcc = 0; fpsN = 0; }
+        updateSeasonTick(dt);
+        tickContracts();
+        nextPest -= dt;
+        if (nextPest <= 0) { nextPest = 45 + Math.random() * 45; maybeSpawnPests(); }
+        if (!game.sandbox)
+        {
+          if (rushT > 0)
+          {
+            rushT -= dt;
+            if (rushT <= 0)
+            {
+              rushT = 0; toast('the bloom rush passes');
+              $('quest').classList.remove('rush');
+            }
+          } else if (T >= nextRush)
+          {
+            rushT = 30; nextRush = T + 260 + Math.random() * 200;
+            toast('bloom rush — double essence & guests, 30 s');
+            jingle(); $('quest').classList.add('rush');
+          }
+        }
+        screenTransform(lctx);
+        lctx.clearRect(0, 0, W, H);
+        if (eraseDirty && fc % 4 === 0) { redrawAll(); eraseDirty = false; }
+        worldTransform(lctx);
+        if (stroke) { drawStrokeTail(); lctx.drawImage(strokeCv, 0, 0, worldW, worldH); }
+        if (!replay)
+        {
+          if (graftDrag)
+          {
+            const pw = toWorld(pointer);
+            lctx.setLineDash([ 3, 4 ]); lctx.strokeStyle = pal.accent; lctx.lineWidth = 1.3 / view.s;
+            lctx.beginPath(); lctx.moveTo(graftDrag.pt.x, graftDrag.pt.y); lctx.lineTo(pw.x, pw.y); lctx.stroke();
+            lctx.setLineDash([]);
+            lctx.beginPath(); lctx.arc(graftDrag.pt.x, graftDrag.pt.y, 4, 0, TAU); lctx.stroke();
+          }
+          growSpines(dt);
+          growTips(dt);
+          processBlooms();
+          if (branchCount !== lastBC)
+          {
+            const d = branchCount - lastBC; lastBC = branchCount;
+            if (d > 0) gameEvent('branch', { n: d });
+          }
+        } else
+        {
+          const per = Math.max(1, Math.ceil(replay.list.length / 220));
+          const end = Math.min(replay.list.length, replay.i + per);
+          for (; replay.i < end; replay.i++)paintOp(replay.list[ replay.i ]);
+          if (replay.i >= replay.list.length)
+          {
+            replay = null; toast('regrown');
+            gameEvent('replay');
+            if (recording) setTimeout(stopRecording, 400);
+          }
+        }
+        updateParticles(dt);
+        updateFlies(dt);
+        updateAphids(dt);
+        drawFlies();
+        drawAphids();
+        for (let i = fx.length - 1; i >= 0; i--)
+        {
+          const f = fx[ i ]; f.age += dt; const u = f.age / 0.45;
+          if (u >= 1) { fx.splice(i, 1); continue; }
+          lctx.globalAlpha = 0.35 * (1 - u); lctx.strokeStyle = pal.accent; lctx.lineWidth = 1.2;
+          lctx.beginPath(); lctx.arc(f.x, f.y, 3 + u * 26, 0, TAU); lctx.stroke(); lctx.globalAlpha = 1;
+        }
+        driftCheck();
+        screenTransform(lctx);
+        for (let i = motes.length - 1; i >= 0; i--)
+        {
+          const m = motes[ i ]; m.t += dt * 1.1;
+          if (m.t >= 1) { motes.splice(i, 1); pulseEss(); continue; }
+          if (m.t < 0) continue;
+          const sx = (m.x - view.x) * view.s, sy = (m.y - view.y) * view.s - m.t * 46;
+          const a = 1 - m.t, s = 2.5 + 3 * Math.sin(Math.min(1, m.t) * Math.PI);
+          lctx.globalAlpha = a; lctx.fillStyle = pal.accent;
+          lctx.beginPath(); lctx.moveTo(sx, sy - s); lctx.lineTo(sx + s, sy);
+          lctx.lineTo(sx, sy + s); lctx.lineTo(sx - s, sy); lctx.closePath(); lctx.fill();
+          lctx.globalAlpha = 1;
+        }
+        drawGuides();
+        drawCursor();
+        if (recording)
+        {
+          const g = recording.g;
+          g.fillStyle = pal.bg; g.fillRect(0, 0, g.canvas.width, g.canvas.height);
+          g.drawImage(bedC, bedC.offsetLeft * DPR, bedC.offsetTop * DPR,
+            bedC.offsetWidth * DPR, bedC.offsetHeight * DPR);
+          g.drawImage(artC, 0, 0);
+          g.drawImage(liveC, 0, 0);
+        }
+        if (fc % 30 === 0) updateTint();
+        if (++fc % 12 === 0) { updateReadout(); pollQuest(); }
+        governor();
+      } catch (e)
+      {
+        noteErr('frame', e);
+      }
+    }
+
+    /* ================= exports ================= */
+    function renderOps(g) {
+      for (const s of specimens) for (const op of s.ops) paintOp(op, g);
+    }
+    function buildExport() {
+      const M = plateOn ? Math.round(Math.min(worldW, worldH) * 0.07) : 0;
+      const capH = plateOn ? Math.round(M * 0.9) : 0;
+      const pw = worldW + 2 * M, ph = worldH + capH + 2 * M;
+      let scale = 2;
+      if (pw * ph * scale * scale > 9e6) scale = 1.25;
+      if (pw * ph * scale * scale > 1.6e7) scale = 1;
+      const c = document.createElement('canvas');
+      c.width = Math.round(pw * scale); c.height = Math.round(ph * scale);
+      const g = c.getContext('2d');
+      g.fillStyle = pal.bg; g.fillRect(0, 0, c.width, c.height);
+      g.setTransform(scale, 0, 0, scale, 0, 0);
+      g.translate(M, M);
+      g.save();
+      g.beginPath(); g.rect(0, 0, worldW, worldH); g.clip();
+      if (beds > 0) g.drawImage(bedC, 0, 0, worldW, worldH);
+      const gr = g.createRadialGradient(worldW / 2, worldH * 0.45, Math.min(worldW, worldH) * 0.3,
+        worldW / 2, worldH * 0.5, Math.max(worldW, worldH) * 0.78);
+      gr.addColorStop(0, `rgba(${pal.vig},0)`);
+      gr.addColorStop(1, `rgba(${pal.vig},${Math.min(1, pal.vigA * 1.5)})`);
+      g.fillStyle = gr; g.fillRect(0, 0, worldW, worldH);
+      renderOps(g);
+      g.restore();
+      if (plateOn)
+      {
+        g.strokeStyle = pal.ink; g.lineWidth = 1;
+        g.strokeRect(-6.5, -6.5, worldW + 13, worldH + 13);
+        g.strokeRect(-2.5, -2.5, worldW + 5, worldH + 5);
+        g.textAlign = 'center';
+        const base = worldH;
+        g.fillStyle = pal.ink;
+        g.font = `italic 600 ${Math.round(capH * 0.46)}px Fraunces, Georgia, serif`;
+        g.fillText('Thicket', worldW / 2, base + capH * 0.5);
+        g.fillStyle = pal.muted;
+        g.font = `${Math.round(capH * 0.23)}px 'IBM Plex Mono', monospace`;
+        const dstr = new Date().toISOString().slice(0, 10);
+        g.fillText(`${season().n} · ${RANKS[ game.rankIdx ][ 1 ]} · seed ${seed} · ${dstr}`,
+          worldW / 2, base + capH * 0.84);
+      }
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      return c;
+    }
+    function savePNG() {
+      if (!worldW) return;
+      const c = buildExport();
+      const a = document.createElement('a');
+      a.download = `thicket-${params.mode}-${seed}.png`;
+      a.href = c.toDataURL('image/png'); a.click();
+      toast('saved as png' + (plateOn ? ' · plate' : ''));
+    }
+    function copyPNG() {
+      try
+      {
+        const c = buildExport();
+        c.toBlob(b => {
+          if (!b) { toast('copy failed'); return; }
+          navigator.clipboard.write([ new ClipboardItem({ 'image/png': b }) ])
+            .then(() => toast('png copied to clipboard'))
+            .catch(() => toast('clipboard unavailable — use Save'));
+        }, 'image/png');
+      } catch (e) { toast('clipboard unavailable — use Save'); }
+    }
+    function saveSVG() {
+      if (!specimens.length && !beds) { toast('nothing to export yet'); return; }
+      const n = v => Math.round(v * 100) / 100;
+      let s = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${worldW}" height="${worldH}" viewBox="0 0 ${worldW} ${worldH}">`;
+      s += `<rect width="${worldW}" height="${worldH}" fill="${pal.bg}"/>`;
+      if (beds > 0)
+      {
+        const b64 = bedC.toDataURL('image/png');
+        s += `<image href="${b64}" xlink:href="${b64}" x="0" y="0" width="${worldW}" height="${worldH}"/>`;
+      }
+      s += `<defs><radialGradient id="vg" cx="50%" cy="45%" r="75%">`
+        + `<stop offset="55%" stop-color="rgb(${pal.vig})" stop-opacity="0"/>`
+        + `<stop offset="100%" stop-color="rgb(${pal.vig})" stop-opacity="${pal.vigA * 1.5}"/></radialGradient></defs>`;
+      s += '<g stroke-linecap="round" stroke-linejoin="round" fill="none">';
+      for (const sp of specimens)
+      {
+        const groups = new Map();
+        const emit = () => {
+          for (const [ key, d ] of groups)
+          {
+            const i = key.lastIndexOf('|');
+            s += `<path d="${d.d}" stroke="${key.slice(0, i)}" stroke-width="${key.slice(i + 1)}"/>`;
+          }
+          groups.clear();
+        };
+        for (const op of sp.ops)
+        {
+          if (op.t === 1)
+          {
+            const key = op.c + '|' + n(op.w);
+            let d = groups.get(key);
+            if (d && d.ex === op.x1 && d.ey === op.y1)
+            {
+              d.d += 'L' + n(op.x2) + ' ' + n(op.y2); d.ex = op.x2; d.ey = op.y2;
+            } else
+            {
+              d = { d: 'M' + n(op.x1) + ' ' + n(op.y1) + 'L' + n(op.x2) + ' ' + n(op.y2), ex: op.x2, ey: op.y2 };
+              groups.set(key, d);
+            }
+          } else
+          {
+            emit();
+            if (op.t === 4)
+            {
+              const ps = op.pts.map(p => n(p[ 0 ]) + ',' + n(p[ 1 ])).join(' ');
+              s += `<polygon points="${ps}" fill="${op.c}"${op.o ? ` stroke="${op.o}" stroke-width="${n(op.w)}"` : ''}/>`;
+            } else if (op.t === 2) for (const p of op.parts)
+            {
+              if (p.kind === 'dot')
+                s += `<circle cx="${n(p.x)}" cy="${n(p.y)}" r="${n(p.r)}" fill="${p.c}" fill-opacity="${p.a}" stroke="none"/>`;
+              else
+                s += `<g transform="translate(${n(p.x)} ${n(p.y)}) rotate(${n(p.rot * 180 / Math.PI)})">`
+                  + `<ellipse cx="${n(p.d)}" cy="0" rx="${n(p.rx)}" ry="${n(p.ry)}" fill="${p.c}" fill-opacity="${p.a}" stroke="none"/></g>`;
+            }
+            else s += `<circle cx="${n(op.x)}" cy="${n(op.y)}" r="${n(op.r)}" fill="${op.c}" fill-opacity="${op.a}" stroke="none"/>`;
+          }
+        }
+        emit();
+      }
+      s += '</g>';
+      s += `<rect width="${worldW}" height="${worldH}" fill="url(#vg)"/></svg>`;
+      const blob = new Blob([ s ], { type: 'image/svg+xml' });
+      const a = document.createElement('a');
+      a.download = `thicket-${params.mode}-${seed}.svg`;
+      a.href = URL.createObjectURL(blob); a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('saved as svg');
+    }
+
+    /* ================= ui wiring ================= */
+    function toast(msg) {
+      const t = $('toast'); t.textContent = msg; t.classList.add('show');
+      clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1700);
+    }
+    const setPressed = (el, on) => { if (el) el.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+
+    const modeBtns = [ ...document.querySelectorAll('#modes button') ];
+    modeBtns.forEach(b => { b.dataset.label = b.textContent; b.title = MODES[ b.dataset.m ].desc; });
+    function setMode(m) {
+      if (params.meadow && params.mode !== m) { params.meadow = false; syncMeadowBtn(); }
+      params.mode = m;
+      modeBtns.forEach(b => b.classList.toggle('on', b.dataset.m === m));
+      $('modeDesc').textContent = MODES[ m ].desc;
+      updateChip(); saveSettings();
+    }
+    modeBtns.forEach(b => b.onclick = () => selectRule(b.dataset.m));
+
+    function syncMeadowBtn() {
+      const b = $('btnMeadow');
+      b.classList.remove('arm');
+      if (!meadowAvailable())
+      {
+        b.classList.add('lock');
+        b.textContent = 'meadow ·' + MEADOW_COST;
+        setPressed(b, false);
+      } else
+      {
+        b.classList.remove('lock');
+        b.classList.toggle('on', params.meadow);
+        b.textContent = params.meadow ? 'meadow · mixed rules' : 'meadow · off';
+        setPressed(b, params.meadow);
+      }
+      updateChip();
+    }
+    function toggleMeadow() {
+      params.meadow = !params.meadow;
+      syncMeadowBtn(); saveSettings();
+      toast(params.meadow ? 'meadow — every gesture grows a random species' : 'meadow off');
+    }
+    $('btnMeadow').onclick = selectMeadow;
+    $('btnSandbox').onclick = toggleSandbox;
+
+    const symBtns = [ ...document.querySelectorAll('#sym button') ];
+    function setSym(s) {
+      params.sym = s;
+      symBtns.forEach(b => b.classList.toggle('on', b.dataset.s === s));
+      updateChip(); saveSettings();
+    }
+    symBtns.forEach(b => b.onclick = () => { setSym(b.dataset.s); toast('symmetry — ' + SYM_LABEL[ b.dataset.s ]); });
+    function updateChip() { $('chip').textContent = (params.meadow ? 'meadow' : params.mode) + ' · ' + SYM_LABEL[ params.sym ]; }
+
+    const SL = {};
+    function bindSlider(id, key, fmt) {
+      const s = $('s-' + id), v = $('v-' + id);
+      const upd = () => { params[ key ] = s.value / 100; v.textContent = fmt ? fmt(+s.value) : s.value; };
+      s.addEventListener('input', () => { upd(); if (key === 'wind') updateWindAudio(); saveSettings(); });
+      s.addEventListener('change', () => s.blur());
+      SL[ key ] = { s, v, upd };
+      upd();
+    }
+    bindSlider('density', 'density'); bindSlider('curl', 'curl');
+    bindSlider('wild', 'wild'); bindSlider('reach', 'reach');
+    bindSlider('lean', 'trop', v => (v > 0 ? '+' : '') + v);
+    bindSlider('wind', 'wind'); bindSlider('flourish', 'flourish'); bindSlider('tempo', 'tempo');
+
+    const presetsEl = $('presets');
+    PRESETS.forEach(p => {
+      const b = document.createElement('button');
+      b.className = 'abtn'; b.textContent = p.n; b.title = p.p.mode + ' · ' + p.p.pal;
+      b.onclick = () => applyPreset(p);
+      presetsEl.appendChild(b);
+    });
+
+    const chipsEl = $('palettes');
+    for (const name in PALETTES)
+    {
+      const b = document.createElement('button');
+      b.className = 'chip' + (name === palName ? ' on' : ''); b.title = name; b.dataset.p = name;
+      b.setAttribute('aria-label', 'palette ' + name);
+      b.style.background = PALETTES[ name ].bg;
+      b.innerHTML = `<i style="background:${PALETTES[ name ].accent}"></i>`;
+      b.onclick = () => { palName = name; pal = PALETTES[ name ]; applyPalette(); saveSettings(); toast('palette — ' + name); };
+      chipsEl.appendChild(b);
+    }
+    function applyPalette() {
+      colCache.clear();
+      const r = document.documentElement.style;
+      r.setProperty('--bg', pal.bg); r.setProperty('--panel', pal.panel);
+      r.setProperty('--line', pal.line); r.setProperty('--ink', pal.ink);
+      r.setProperty('--muted', pal.muted); r.setProperty('--accent', pal.accent);
+      r.setProperty('--vig', `rgba(${pal.vig},${pal.vigA})`);
+      [ ...chipsEl.children ].forEach(c => c.classList.toggle('on', c.dataset.p === palName));
+    }
+
+    const shelfEl = $('shelf');
+    for (let i = 1; i <= 3; i++)
+    {
+      const bS = document.createElement('button');
+      bS.className = 'abtn'; bS.textContent = 'save ' + i;
+      bS.onclick = () => shelfSave(i);
+      const bL = document.createElement('button');
+      bL.className = 'abtn'; bL.id = 'shelfL' + i;
+      bL.onclick = () => shelfLoad(i);
+      shelfEl.appendChild(bS); shelfEl.appendChild(bL);
+    }
+    const bAuto = document.createElement('button');
+    bAuto.className = 'abtn wide off'; bAuto.id = 'btnAuto'; bAuto.textContent = 'restore last session';
+    bAuto.onclick = () => {
+      if (replay) { toast('wait for the replay'); return; }
+      let data = null;
+      try { data = JSON.parse(localStorage.getItem('thicket.autosave') || 'null'); } catch (e) { data = null; }
+      if (!data) { toast('no saved session yet'); return; }
+      restoreScene(data, 'last session restored');
+    };
+    shelfEl.appendChild(bAuto);
+
+    function updateActionBtns() {
+      const heavy = totalOps > OP_LIMIT;
+      $('btnUndo').classList.toggle('off', !actions.length || heavy);
+      $('btnRedo').classList.toggle('off', !redoActions.length || heavy);
+      $('btnReplay').classList.toggle('off', totalOps === 0 || !!replay);
+    }
+    function updateReadout() {
+      const ph = dayPhase();
+      $('stSeason').textContent = season().n + ' · ' + ph;
+      $('stRank').textContent = RANKS[ game.rankIdx ][ 1 ];
+      $('stEss').textContent = game.ess;
+      $('stQuests').textContent = String(game.questsDone).padStart(2, '0');
+      $('stGardens').textContent = String(game.gardensDone).padStart(2, '0');
+      $('stCat').textContent = Object.keys(game.cat).length + ' rares';
+      const ev = $('stEvent');
+      if (rushT > 0) { ev.textContent = 'rush ' + Math.ceil(rushT) + 's'; ev.classList.add('rush'); }
+      else if (aphids.length) { ev.textContent = 'aphids ×' + aphids.length; ev.classList.add('rush'); }
+      else { ev.textContent = game.sandbox ? 'sandbox' : '—'; ev.classList.remove('rush'); }
+      $('stTips').textContent = String(tips.length).padStart(3, '0');
+      $('stFps').textContent = String(fpsV).padStart(2, '0');
+      $('stSeed').textContent = String(seed).padStart(5, '0');
+      updateActionBtns();
+    }
+    function toggleErase() {
+      eraseOn = !eraseOn;
+      if (eraseOn && graftOn) { graftOn = false; $('btnGraft').classList.remove('on'); setPressed($('btnGraft'), false); }
+      $('btnErase').classList.toggle('on', eraseOn);
+      setPressed($('btnErase'), eraseOn);
+      toast(eraseOn ? 'eraser on — drag across growth' : 'eraser off');
+    }
+    function toggleGraft() {
+      graftOn = !graftOn;
+      if (graftOn && eraseOn) { eraseOn = false; $('btnErase').classList.remove('on'); setPressed($('btnErase'), false); }
+      $('btnGraft').classList.toggle('on', graftOn);
+      setPressed($('btnGraft'), graftOn);
+      toast(graftOn ? 'graft — drag out from any stem' : 'graft off');
+    }
+    function toggleSound() {
+      soundOn = !soundOn;
+      if (soundOn) { ensureAudio(); if (AC && AC.state === 'suspended') AC.resume(); }
+      $('btnChimes').classList.toggle('on', soundOn);
+      setPressed($('btnChimes'), soundOn);
+      updateWindAudio();
+      toast(soundOn ? 'chimes + wind on' : 'sound off');
+    }
+    function toggleDrift() {
+      driftOn = !driftOn;
+      $('btnDrift').classList.toggle('on', driftOn);
+      setPressed($('btnDrift'), driftOn);
+      toast(driftOn ? 'drift gardener on' : 'drift gardener off');
+    }
+    function syncPlate() {
+      $('btnPlate').classList.toggle('on', plateOn);
+      $('btnPlate').textContent = 'print plate · ' + (plateOn ? 'on' : 'off');
+      setPressed($('btnPlate'), plateOn);
+    }
+    function togglePlate() {
+      plateOn = !plateOn; syncPlate(); saveSettings();
+      toast(plateOn ? 'prints include the specimen plate' : 'plain exports');
+    }
+    let lastFocus = null;
+    function toggleHelp(force) {
+      const h = $('help');
+      const show = force !== undefined ? force : h.hidden;
+      if (show)
+      {
+        lastFocus = document.activeElement;
+        fillAch(); fillCatalog();
+        h.removeAttribute('hidden');
+        $('helpClose').focus();
+      } else
+      {
+        h.setAttribute('hidden', '');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+    }
+    $('btnScatter').onclick = () => scatter(3 + (Math.random() * 2 | 0));
+    $('btnSeed').onclick = reseed;
+    $('btnUndo').onclick = undo;
+    $('btnRedo').onclick = redo;
+    $('btnReplay').onclick = startReplay;
+    $('btnGraft').onclick = toggleGraft;
+    $('btnErase').onclick = toggleErase;
+    $('btnLayer').onclick = layerDown;
+    $('btnDice').onclick = dice;
+    $('btnClear').onclick = requestClear;
+    $('btnDeliver').onclick = deliverGarden;
+    $('btnSave').onclick = savePNG;
+    $('btnCopy').onclick = copyPNG;
+    $('btnOpen').onclick = () => $('fileIn').click();
+    $('btnShare').onclick = shareLink;
+    $('btnProj').onclick = saveProject;
+    $('btnSvg').onclick = saveSVG;
+    $('btnPlate').onclick = togglePlate;
+    $('btnChimes').onclick = toggleSound;
+    $('btnDrift').onclick = toggleDrift;
+    $('btnGust').onclick = doGust;
+    $('btnRecord').onclick = recordTimelapse;
+    $('btnHelp').onclick = () => toggleHelp();
+    $('helpClose').onclick = () => toggleHelp(false);
+    $('help').addEventListener('pointerdown', e => { if (e.target.id === 'help') toggleHelp(false); });
+    $('qSkip').onclick = skipQuest;
+    $('fold').onclick = () => {
+      document.body.classList.toggle('folded');
+      $('fold').setAttribute('aria-expanded', document.body.classList.contains('folded') ? 'false' : 'true');
+    };
+    $('zin').onclick = () => zoomAt(W / 2, H / 2, 1.25);
+    $('zout').onclick = () => zoomAt(W / 2, H / 2, 0.8);
+    $('zfit').onclick = resetView;
+    $('fileIn').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[ 0 ];
+      if (f) openProjectFile(f);
+      e.target.value = '';
+    });
+
+    addEventListener('keydown', e => {
+      if (e.key === 'Escape') { toggleHelp(false); closeJudge(); clearArm(); return; }
+      if (e.metaKey || e.ctrlKey)
+      {
+        const k = e.key.toLowerCase();
+        if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+        else if (k === 'y') { e.preventDefault(); redo(); }
+        else if (k === 's') { e.preventDefault(); savePNG(); }
+        else if (k === 'o') { e.preventDefault(); $('fileIn').click(); }
+        return;
+      }
+      if (e.altKey) return;
+      if (e.target && e.target.tagName === 'INPUT') return;
+      lastInteract = T;
+      const k = e.key;
+      if (k === ' ') { if (!panHold) { panHold = true; e.preventDefault(); } return; }
+      const lk = k.toLowerCase();
+      const symOrder = [ 'free', 'mirror', 'rad4', 'rad6' ];
+      const map = {
+        '1': () => selectRule('vine'), '2': () => selectRule('coral'),
+        '3': () => selectRule('mycelium'), '4': () => selectRule('fern'),
+        '5': () => selectRule('willow'), '6': () => selectRule('frost'),
+        '7': () => selectRule('bamboo'), '8': () => selectRule('kelp'),
+        t: () => selectRule('tendril'), p: () => selectRule('plume'),
+        f: () => selectRule('fungus'), n: () => selectRule('vein'),
+        q: () => selectRule('crystal'), b: () => selectRule('rock'),
+        a: selectMeadow,
+        m: () => {
+          const i = (symOrder.indexOf(params.sym) + 1) % 4; setSym(symOrder[ i ]);
+          toast('symmetry — ' + SYM_LABEL[ params.sym ]);
+        },
+        g: () => scatter(3 + (Math.random() * 2 | 0)),
+        j: toggleGraft, d: dice, w: doGust, k: deliverGarden,
+        r: startReplay, x: toggleErase, z: undo, y: redo, l: layerDown,
+        c: requestClear, e: reseed, s: savePNG, v: saveSVG,
+        o: () => $('fileIn').click(),
+        h: () => toggleHelp(), '?': () => toggleHelp(),
+        '+': () => zoomAt(W / 2, H / 2, 1.25), '=': () => zoomAt(W / 2, H / 2, 1.25),
+        '-': () => zoomAt(W / 2, H / 2, 0.8), '0': resetView
+      };
+      const fn = map[ lk ];
+      if (fn) { e.preventDefault(); fn(); }
+    });
+    addEventListener('keyup', e => { if (e.key === ' ') panHold = false; });
+    addEventListener('beforeunload', e => {
+      if (specimens.length) { e.preventDefault(); e.returnValue = ''; }
+    });
+    addEventListener('blur', () => {
+      if (stroke) finishStroke();
+      if (graftDrag) graftEnd();
+      pointer.down = false;
+    });
+
+    /* ================= settings persistence (debounced) ================= */
+    let setT = 0;
+    function saveSettings() { clearTimeout(setT); setT = setTimeout(writeSettings, 350); }
+    function writeSettings() {
+      try
+      {
+        localStorage.setItem('thicket', JSON.stringify({
+          mode: params.mode, sym: params.sym, meadow: params.meadow, pal: palName, plate: plateOn,
+          s: {
+            density: params.density, curl: params.curl, wild: params.wild, reach: params.reach,
+            trop: params.trop, wind: params.wind, flourish: params.flourish, tempo: params.tempo
+          }
+        }));
+      } catch (e) { }
+    }
+    function loadSettings() {
+      try
+      {
+        const d = JSON.parse(localStorage.getItem('thicket') || 'null');
+        if (!d) return;
+        if (d.mode && MODES[ d.mode ]) params.mode = d.mode;
+        if (d.sym && SYM_LABEL[ d.sym ]) params.sym = d.sym;
+        params.meadow = !!d.meadow;
+        if (d.pal && PALETTES[ d.pal ]) palName = d.pal;
+        if (typeof d.plate === 'boolean') plateOn = d.plate;
+        if (d.s) for (const k in d.s) if (k in params) params[ k ] = d.s[ k ];
+      } catch (e) { }
+    }
+
+    /* paper grain */
+    (function () {
+      const n = document.createElement('canvas'); n.width = n.height = 120;
+      const g = n.getContext('2d'), img = g.createImageData(120, 120), d = img.data;
+      for (let i = 0; i < d.length; i += 4) { const v = Math.random() * 255 | 0; d[ i ] = d[ i + 1 ] = d[ i + 2 ] = v; d[ i + 3 ] = 13; }
+      g.putImageData(img, 0, 0);
+      $('grain').style.backgroundImage = `url(${n.toDataURL()})`;
+    })();
+
+    /* boot */
+    loadGame();
+    loadSettings();
+    if (!ruleAvailable(params.mode)) params.mode = 'vine';
+    if (params.meadow && !meadowAvailable()) params.meadow = false;
+    applyPalette();
+    const hadHash = readHash();
+    setMode(params.mode); setSym(params.sym);
+    refreshRuleButtons(); buildShop(); refreshShop();
+    syncMeadowBtn(); syncPlate(); updateReadout(); refreshShelf();
+    applyView(); updateTint();
+    nextQuest();
+    checkAch();
+    if (hadHash) { saveSettings(); setTimeout(() => toast('shared settings loaded'), 400); }
+    if (document.fonts && document.fonts.load)
+    {
+      document.fonts.load('italic 600 28px Fraunces');
+      document.fonts.load('12px "IBM Plex Mono"');
+    }
+    if (innerWidth < 760) document.body.classList.add('folded');
+    setTimeout(() => {
+      if (!specimens.length && (game.sandbox || game.questsDone > 0)) scatter(2);
+    }, 650);
+    requestAnimationFrame(frame);
+  </script>
+</body>
+
+</html>
